@@ -10,18 +10,33 @@ import ContactApp from '../Apps/ContactApp'
 import TerminalApp from '../Apps/TerminalApp'
 import BrowserApp from '../Apps/BrowserApp'
 import SettingsApp from '../Apps/SettingsApp'
-import { APPS, APP_CONFIG, USER_INFO } from '../../utils/constants'
+import { APPS, APP_CONFIG, USER_INFO, WALLPAPERS } from '../../utils/constants'
 
 const MobileView = () => {
   const [activeApp, setActiveApp] = useState(null)
   const [showNotification, setShowNotification] = useState(false)
   const [spotifyData, setSpotifyData] = useState(null)
+  
+  // Settings state
+  const [wallpaper, setWallpaper] = useState(1)
+  const [brightness, setBrightness] = useState(100)
+  const [volume, setVolume] = useState(100)
+  const [hiddenApps, setHiddenApps] = useState([])
+  const [customWallpaper, setCustomWallpaper] = useState(null)
+  const [widgetSettings, setWidgetSettings] = useState({
+    clock: true,
+    weather: true,
+    notes: false,
+    systemStats: false,
+  })
+  
   const scrollRef = useRef(null)
   const { scrollY } = useScroll()
   
   const backgroundY = useTransform(scrollY, [0, 500], [0, 150])
 
-  const apps = Object.entries(APP_CONFIG)
+  // Filter out hidden apps
+  const apps = Object.entries(APP_CONFIG).filter(([id]) => !hiddenApps.includes(id))
 
   const handleAppOpen = (appId) => {
     setActiveApp(appId)
@@ -33,9 +48,61 @@ const MobileView = () => {
     setActiveApp(null)
   }
 
+  // Settings handlers
+  const updateWallpaper = (id) => {
+    setWallpaper(id)
+  }
+
+  const updateBrightness = (value) => {
+    setBrightness(value)
+  }
+
+  const updateVolume = (value) => {
+    setVolume(value)
+  }
+
+  const updateHiddenApps = (apps) => {
+    setHiddenApps(apps)
+  }
+
+  const updateCustomWallpaper = (url) => {
+    setCustomWallpaper(url)
+  }
+
+  const updateWidgetSettings = (settings) => {
+    setWidgetSettings(settings)
+  }
+
+  // Get current wallpaper
+  const getCurrentWallpaper = () => {
+    if (wallpaper === 'custom' && customWallpaper) {
+      return `url(${customWallpaper})`
+    }
+    const wallpaperObj = WALLPAPERS.find(w => w.id === wallpaper)
+    return wallpaperObj?.value || WALLPAPERS[0].value
+  }
+
   const renderAppContent = () => {
     const commonProps = {
       onClose: handleAppClose,
+    }
+
+    const settingsProps = {
+      ...commonProps,
+      settings: {
+        wallpaper,
+        brightness,
+        volume,
+        hiddenApps,
+        customWallpaper,
+        widgetSettings,
+        updateWallpaper,
+        updateBrightness,
+        updateVolume,
+        updateHiddenApps,
+        updateCustomWallpaper,
+        updateWidgetSettings,
+      }
     }
 
     switch (activeApp) {
@@ -52,7 +119,7 @@ const MobileView = () => {
       case APPS.BROWSER:
         return <MobileAppWrapper {...commonProps}><BrowserApp /></MobileAppWrapper>
       case APPS.SETTINGS:
-        return <MobileAppWrapper {...commonProps}><SettingsApp /></MobileAppWrapper>
+        return <MobileAppWrapper {...settingsProps}><SettingsApp {...settingsProps} /></MobileAppWrapper>
       default:
         return null
     }
@@ -60,8 +127,16 @@ const MobileView = () => {
 
   return (
     <div className="flex items-center justify-center min-h-screen w-full bg-gray-900">
-      <div className="relative w-full max-w-md h-screen overflow-hidden bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900">
-        {/* Animated Background */}
+      <div 
+        className="relative w-full max-w-md h-screen overflow-hidden"
+        style={{
+          background: getCurrentWallpaper(),
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          filter: `brightness(${brightness}%)`,
+        }}
+      >
+        {/* Animated Background Overlay */}
         <motion.div
           style={{ y: backgroundY }}
           className="absolute inset-0 bg-gradient-to-br from-pink-500/20 via-purple-500/20 to-blue-500/20"
@@ -157,7 +232,7 @@ const MobileView = () => {
               </motion.div>
 
               {/* Widgets Section */}
-              <MobileWidgets />
+              <MobileWidgets widgetSettings={widgetSettings} />
 
               {/* App Grid */}
               <div className="px-6 py-8">

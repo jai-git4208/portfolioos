@@ -10,8 +10,11 @@ const DynamicIsland = ({ showNotification, spotifyData, onSpotifyUpdate }) => {
   const [deviceId, setDeviceId] = useState(null)
   const [accessToken, setAccessToken] = useState(null)
 
+  // NEW: Ask user before starting Spotify
+  const [askToPlay, setAskToPlay] = useState(true)
+
   // Spotify Configuration
-  const CLIENT_ID = 'fdfb1aed092d44659a2414f29bb17c82' // Replace with your Spotify Client ID
+  const CLIENT_ID = 'fdfb1aed092d44659a2414f29bb17c82'
   const REDIRECT_URI = window.location.origin
   const SCOPES = [
     'streaming',
@@ -45,8 +48,9 @@ const DynamicIsland = ({ showNotification, spotifyData, onSpotifyUpdate }) => {
 
   // Initialize Spotify Authentication
   useEffect(() => {
+    if (!askToPlay) return // user said NO → skip everything
+
     const initSpotify = async () => {
-      // Check for existing token
       const token = localStorage.getItem('spotify_access_token')
       const tokenExpiry = localStorage.getItem('spotify_token_expiry')
       
@@ -56,7 +60,6 @@ const DynamicIsland = ({ showNotification, spotifyData, onSpotifyUpdate }) => {
         return
       }
 
-      // Check for auth code in URL
       const params = new URLSearchParams(window.location.search)
       const code = params.get('code')
 
@@ -64,14 +67,11 @@ const DynamicIsland = ({ showNotification, spotifyData, onSpotifyUpdate }) => {
         const codeVerifier = localStorage.getItem('code_verifier')
         await exchangeToken(code, codeVerifier)
         window.history.replaceState({}, document.title, window.location.pathname)
-      } else {
-        // Start auth flow automatically on first load
-        await authenticate()
       }
     }
 
     initSpotify()
-  }, [])
+  }, [askToPlay])
 
   // Spotify Authentication
   const authenticate = async () => {
@@ -96,9 +96,7 @@ const DynamicIsland = ({ showNotification, spotifyData, onSpotifyUpdate }) => {
   const exchangeToken = async (code, codeVerifier) => {
     const response = await fetch('https://accounts.spotify.com/api/token', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: new URLSearchParams({
         client_id: CLIENT_ID,
         grant_type: 'authorization_code',
@@ -168,12 +166,11 @@ const DynamicIsland = ({ showNotification, spotifyData, onSpotifyUpdate }) => {
     }
   }
 
-  // Play random programming-related song
   const playRandomProgrammingSong = async (token, device) => {
     try {
       const programmingPlaylists = [
-        '37i9dQZF1DX5trt9i14X7j', // Coding Mode
-        '37i9dQZF1DX8NTLI2TtZa6', // Deep Focus
+        '37i9dQZF1DX5trt9i14X7j',
+        '37i9dQZF1DX8NTLI2TtZa6',
       ]
       
       const playlistId = programmingPlaylists[Math.floor(Math.random() * programmingPlaylists.length)]
@@ -194,26 +191,10 @@ const DynamicIsland = ({ showNotification, spotifyData, onSpotifyUpdate }) => {
     }
   }
 
-  // Playback controls
-  const togglePlayPause = () => {
-    if (player) {
-      player.togglePlay()
-    }
-  }
+  const togglePlayPause = () => player && player.togglePlay()
+  const skipNext = () => player && player.nextTrack()
+  const skipPrevious = () => player && player.previousTrack()
 
-  const skipNext = () => {
-    if (player) {
-      player.nextTrack()
-    }
-  }
-
-  const skipPrevious = () => {
-    if (player) {
-      player.previousTrack()
-    }
-  }
-
-  // Determine island state
   const shouldExpand = showNotification || (currentTrack && isExpanded)
   const hasMusic = currentTrack && isPlaying
 
@@ -234,14 +215,44 @@ const DynamicIsland = ({ showNotification, spotifyData, onSpotifyUpdate }) => {
           onClick={() => hasMusic && setIsExpanded(!isExpanded)}
           className="bg-black rounded-[28px] flex items-center justify-center overflow-hidden cursor-pointer"
         >
-          {/* Notification State */}
-          {showNotification && !hasMusic && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
+
+          {/* NEW: Play Music Prompt */}
+          {!showNotification && !hasMusic && askToPlay && (
+            <motion.div 
+              initial={{ opacity: 0 }} 
+              animate={{ opacity: 1 }} 
               exit={{ opacity: 0 }}
-              className="flex items-center space-x-3 px-6"
+              className="flex flex-col items-center justify-center py-2"
             >
+              <p className="text-white text-xs mb-1">Play music?</p>
+
+              <div className="flex items-center space-x-3">
+                <button 
+                  onClick={(e) => { 
+                    e.stopPropagation(); 
+                    authenticate(); 
+                  }}
+                  className="text-white bg-white/20 px-3 py-1 rounded-full text-xs"
+                >
+                  Yes
+                </button>
+
+                <button 
+                  onClick={(e) => { 
+                    e.stopPropagation(); 
+                    setAskToPlay(false); 
+                  }}
+                  className="text-white/60 px-3 py-1 rounded-full text-xs"
+                >
+                  No
+                </button>
+              </div>
+            </motion.div>
+          )}
+
+          {/* Notification State */}
+          {showNotification && !hasMusic && !askToPlay && (
+            <motion.div className="flex items-center space-x-3 px-6">
               <div className="w-10 h-10 rounded-full bg-gradient-to-br from-neon-pink to-neon-orange flex items-center justify-center text-xl">
                 📱
               </div>
@@ -254,12 +265,7 @@ const DynamicIsland = ({ showNotification, spotifyData, onSpotifyUpdate }) => {
 
           {/* Music Compact View */}
           {hasMusic && !shouldExpand && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="flex items-center space-x-3 px-4"
-            >
+            <motion.div className="flex items-center space-x-3 px-4">
               <img 
                 src={currentTrack.image} 
                 alt="Album" 
@@ -274,19 +280,12 @@ const DynamicIsland = ({ showNotification, spotifyData, onSpotifyUpdate }) => {
                   {currentTrack.name}
                 </motion.p>
               </div>
-              {/* Waveform Visualizer */}
               <div className="flex items-center space-x-0.5">
                 {[...Array(3)].map((_, i) => (
                   <motion.div
                     key={i}
-                    animate={{
-                      height: [8, 16, 8],
-                    }}
-                    transition={{
-                      duration: 0.5,
-                      repeat: Infinity,
-                      delay: i * 0.1,
-                    }}
+                    animate={{ height: [8, 16, 8] }}
+                    transition={{ duration: 0.5, repeat: Infinity, delay: i * 0.1 }}
                     className="w-0.5 bg-white rounded-full"
                   />
                 ))}
@@ -296,12 +295,7 @@ const DynamicIsland = ({ showNotification, spotifyData, onSpotifyUpdate }) => {
 
           {/* Music Expanded View */}
           {hasMusic && shouldExpand && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="w-full h-full p-4 flex flex-col justify-between"
-            >
+            <motion.div className="w-full h-full p-4 flex flex-col justify-between">
               <div className="flex items-center space-x-3">
                 <img 
                   src={currentTrack.image} 
@@ -318,7 +312,6 @@ const DynamicIsland = ({ showNotification, spotifyData, onSpotifyUpdate }) => {
                 </div>
               </div>
 
-              {/* Controls */}
               <div className="flex items-center justify-center space-x-6 mt-2">
                 <motion.button
                   whileTap={{ scale: 0.9 }}
@@ -349,7 +342,6 @@ const DynamicIsland = ({ showNotification, spotifyData, onSpotifyUpdate }) => {
                 </motion.button>
               </div>
 
-              {/* Progress Bar */}
               <div className="mt-2">
                 <div className="h-1 bg-white/20 rounded-full overflow-hidden">
                   <motion.div
@@ -361,14 +353,9 @@ const DynamicIsland = ({ showNotification, spotifyData, onSpotifyUpdate }) => {
             </motion.div>
           )}
 
-          {/* Idle State */}
-          {!showNotification && !hasMusic && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="w-full h-full"
-            />
+          {/* Idle State (only visible after clicking "No") */}
+          {!showNotification && !hasMusic && !askToPlay && (
+            <motion.div className="w-full h-full" />
           )}
         </motion.div>
       </AnimatePresence>

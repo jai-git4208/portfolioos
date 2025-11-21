@@ -11,7 +11,7 @@ const DynamicIsland = ({ showNotification, spotifyData, onSpotifyUpdate }) => {
   const [accessToken, setAccessToken] = useState(null)
 
   // Spotify Configuration
-  const CLIENT_ID = 'YOUR_SPOTIFY_CLIENT_ID' // Replace with your Spotify Client ID
+  const CLIENT_ID = 'fdfb1aed092d44659a2414f29bb17c82' // Replace with your Spotify Client ID
   const REDIRECT_URI = window.location.origin
   const SCOPES = [
     'streaming',

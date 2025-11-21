@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion'
 import { APPS, APP_CONFIG } from '../../utils/constants'
 
@@ -60,40 +60,42 @@ const DockIcon = ({ app, isOpen, onClick, mouseX }) => {
   )
 }
 
-const Dock = ({ onAppOpen, openWindows, onWindowRestore }) => {
+const Dock = ({ onAppOpen, openWindows, onWindowRestore, hiddenApps = [] }) => {
   const mouseX = useMotionValue(Infinity)
 
-  const apps = Object.values(APPS)
+  // Filter out hidden apps
+  const visibleApps = Object.values(APPS).filter(app => !hiddenApps.includes(app))
 
   return (
-    <div className="fixed bottom-6 left-0 right-0 z-50 flex justify-center pointer-events-none">
+    <div className="fixed bottom-6 left-0 right-0 flex justify-center z-50 pointer-events-none">
       <motion.div
         initial={{ y: 200 }}
         animate={{ y: 0 }}
         transition={{ type: "spring", stiffness: 300, damping: 30, delay: 0.2 }}
-        className="pointer-events-auto"
         onMouseMove={(e) => mouseX.set(e.pageX)}
         onMouseLeave={() => mouseX.set(Infinity)}
+        className="pointer-events-auto"
       >
         <div className="flex items-end space-x-3 px-6 py-4 rounded-3xl glass-strong deep-shadow">
-          {/* Dock Divider */}
-          <div className="w-px h-12 bg-white/20 mx-2" />
-          
-          {apps.map(app => (
-            <DockIcon
-              key={app}
-              app={app}
-              isOpen={openWindows.some(w => w.id === app && !w.minimized)}
-              onClick={() => {
-                const window = openWindows.find(w => w.id === app)
-                if (window?.minimized) {
-                  onWindowRestore(app)
-                } else {
-                  onAppOpen(app)
-                }
-              }}
-              mouseX={mouseX}
-            />
+          {visibleApps.map((app, index) => (
+            <React.Fragment key={app}>
+              {index === Math.floor(visibleApps.length / 2) && (
+                <div className="w-px h-12 bg-white/20 mx-2" />
+              )}
+              <DockIcon
+                app={app}
+                isOpen={openWindows.some(w => w.id === app && !w.minimized)}
+                onClick={() => {
+                  const window = openWindows.find(w => w.id === app)
+                  if (window?.minimized) {
+                    onWindowRestore(app)
+                  } else {
+                    onAppOpen(app)
+                  }
+                }}
+                mouseX={mouseX}
+              />
+            </React.Fragment>
           ))}
         </div>
       </motion.div>

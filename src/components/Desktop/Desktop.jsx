@@ -9,12 +9,47 @@ import { useWindowManager } from '../../hooks/useWindowManager'
 import { APP_CONFIG, APPS } from '../../utils/constants'
 import WeatherWidget from '../Widgets/WeatherWidget'
 import ClockWidget from '../Widgets/ClockWidget'
+import NotesWidget from '../Widgets/NotesWidget'
+import SystemStatsWidget from '../Widgets/SystemStatsWidget'
 
 const Desktop = () => {
   const windowManager = useWindowManager()
   const [showSpotlight, setShowSpotlight] = useState(false)
-  const [wallpaper, setWallpaper] = useState(1)
-  const [theme, setTheme] = useState('dark')
+  
+  // Load settings from localStorage
+  const [wallpaper, setWallpaper] = useState(() => {
+    const saved = localStorage.getItem('desktop_wallpaper')
+    return saved ? saved : 1
+  })
+  
+  const [customWallpaper, setCustomWallpaper] = useState(() => {
+    return localStorage.getItem('desktop_custom_wallpaper')
+  })
+  
+  const [brightness, setBrightness] = useState(() => {
+    const saved = localStorage.getItem('desktop_brightness')
+    return saved ? parseInt(saved) : 100
+  })
+  
+  const [volume, setVolume] = useState(() => {
+    const saved = localStorage.getItem('desktop_volume')
+    return saved ? parseInt(saved) : 100
+  })
+  
+  const [hiddenApps, setHiddenApps] = useState(() => {
+    const saved = localStorage.getItem('desktop_hidden_apps')
+    return saved ? JSON.parse(saved) : []
+  })
+
+  const [widgetSettings, setWidgetSettings] = useState(() => {
+    const saved = localStorage.getItem('desktop_widget_settings')
+    return saved ? JSON.parse(saved) : {
+      clock: true,
+      weather: true,
+      notes: false,
+      systemStats: false,
+    }
+  })
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -35,10 +70,53 @@ const Desktop = () => {
     windowManager.openWindow(appId, APP_CONFIG[appId])
   }
 
+  // Settings update handlers
+  const updateWallpaper = (id) => {
+    setWallpaper(id)
+    localStorage.setItem('desktop_wallpaper', id.toString())
+  }
+
+  const updateCustomWallpaper = (imageUrl) => {
+    setCustomWallpaper(imageUrl)
+    if (imageUrl) {
+      localStorage.setItem('desktop_custom_wallpaper', imageUrl)
+    } else {
+      localStorage.removeItem('desktop_custom_wallpaper')
+    }
+  }
+
+  const updateBrightness = (value) => {
+    setBrightness(value)
+    localStorage.setItem('desktop_brightness', value.toString())
+  }
+
+  const updateVolume = (value) => {
+    setVolume(value)
+    localStorage.setItem('desktop_volume', value.toString())
+    
+    // Update all audio elements
+    document.querySelectorAll('audio').forEach(audio => {
+      audio.volume = value / 100
+    })
+  }
+
+  const updateHiddenApps = (apps) => {
+    setHiddenApps(apps)
+    localStorage.setItem('desktop_hidden_apps', JSON.stringify(apps))
+  }
+
+  const updateWidgetSettings = (settings) => {
+    setWidgetSettings(settings)
+    localStorage.setItem('desktop_widget_settings', JSON.stringify(settings))
+  }
+
   return (
-    <div className="relative w-full h-full overflow-hidden">
+    <div 
+      className="relative w-full h-full overflow-hidden"
+      style={{ filter: `brightness(${brightness}%)` }}
+    >
       {/* Animated Wallpaper */}
-      <Wallpaper wallpaperId={wallpaper} />
+      <Wallpaper wallpaperId={wallpaper} customWallpaper={customWallpaper} />
 
       {/* Desktop Widgets - Top Right */}
       <motion.div
@@ -47,8 +125,10 @@ const Desktop = () => {
         transition={{ delay: 0.5 }}
         className="absolute top-24 right-8 space-y-4 z-10"
       >
-        <ClockWidget />
-        <WeatherWidget />
+        {widgetSettings.clock && <ClockWidget />}
+        {widgetSettings.weather && <WeatherWidget />}
+        {widgetSettings.notes && <NotesWidget />}
+        {widgetSettings.systemStats && <SystemStatsWidget />}
       </motion.div>
 
       {/* Top Bar */}
@@ -63,6 +143,7 @@ const Desktop = () => {
         <Spotlight
           onClose={() => setShowSpotlight(false)}
           onAppOpen={handleAppOpen}
+          hiddenApps={hiddenApps}
         />
       )}
 
@@ -79,6 +160,21 @@ const Desktop = () => {
             onFocus={() => windowManager.focusWindow(window.id)}
             onPositionChange={(pos) => windowManager.updateWindowPosition(window.id, pos)}
             onSizeChange={(size) => windowManager.updateWindowSize(window.id, size)}
+            // Pass settings to Settings app
+            desktopSettings={{
+              wallpaper,
+              customWallpaper,
+              brightness,
+              volume,
+              hiddenApps,
+              widgetSettings,
+              updateWallpaper,
+              updateCustomWallpaper,
+              updateBrightness,
+              updateVolume,
+              updateHiddenApps,
+              updateWidgetSettings,
+            }}
           />
         )
       ))}
@@ -88,6 +184,7 @@ const Desktop = () => {
         onAppOpen={handleAppOpen}
         openWindows={windowManager.windows}
         onWindowRestore={windowManager.restoreWindow}
+        hiddenApps={hiddenApps}
       />
     </div>
   )

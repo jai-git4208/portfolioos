@@ -1,30 +1,21 @@
 import { useState, useCallback, useRef, useEffect } from 'react'
 
 export const useDraggable = (initialPosition, onPositionChange) => {
-  const [isDragging, setIsDragging] = useState(false)
   const [position, setPosition] = useState(initialPosition)
+  const isDraggingRef = useRef(false)
   const dragStartPos = useRef({ x: 0, y: 0 })
   const elementStartPos = useRef({ x: 0, y: 0 })
-  const isDraggingRef = useRef(false)
 
-  const handleMouseDown = useCallback((e) => {
-    if (e.target.closest('.no-drag')) return
-    
-    const clientX = e.touches ? e.touches[0].clientX : e.clientX
-    const clientY = e.touches ? e.touches[0].clientY : e.clientY
-    
-    setIsDragging(true)
-    isDraggingRef.current = true
-    dragStartPos.current = { x: clientX, y: clientY }
-    elementStartPos.current = position
-    e.preventDefault()
-  }, [position])
+  // Sync position when external position changes
+  useEffect(() => {
+    setPosition(initialPosition)
+  }, [initialPosition.x, initialPosition.y])
 
   const handleMouseMove = useCallback((e) => {
     if (!isDraggingRef.current) return
 
-    const clientX = e.touches ? e.touches[0].clientX : e.clientX
-    const clientY = e.touches ? e.touches[0].clientY : e.clientY
+    const clientX = e.clientX ?? e.touches?.[0]?.clientX
+    const clientY = e.clientY ?? e.touches?.[0]?.clientY
 
     const deltaX = clientX - dragStartPos.current.x
     const deltaY = clientY - dragStartPos.current.y
@@ -39,28 +30,35 @@ export const useDraggable = (initialPosition, onPositionChange) => {
   }, [onPositionChange])
 
   const handleMouseUp = useCallback(() => {
-    setIsDragging(false)
     isDraggingRef.current = false
-  }, [])
+    document.removeEventListener('mousemove', handleMouseMove)
+    document.removeEventListener('mouseup', handleMouseUp)
+    document.removeEventListener('touchmove', handleMouseMove)
+    document.removeEventListener('touchend', handleMouseUp)
+  }, [handleMouseMove])
 
-  useEffect(() => {
-    if (isDragging) {
-      window.addEventListener('mousemove', handleMouseMove)
-      window.addEventListener('mouseup', handleMouseUp)
-      window.addEventListener('touchmove', handleMouseMove, { passive: false })
-      window.addEventListener('touchend', handleMouseUp)
-      
-      return () => {
-        window.removeEventListener('mousemove', handleMouseMove)
-        window.removeEventListener('mouseup', handleMouseUp)
-        window.removeEventListener('touchmove', handleMouseMove)
-        window.removeEventListener('touchend', handleMouseUp)
-      }
-    }
-  }, [isDragging, handleMouseMove, handleMouseUp])
+  const handleMouseDown = useCallback((e) => {
+    // Ignore if clicking on no-drag elements
+    if (e.target.closest('.no-drag')) return
+    
+    const clientX = e.clientX ?? e.touches?.[0]?.clientX
+    const clientY = e.clientY ?? e.touches?.[0]?.clientY
+
+    isDraggingRef.current = true
+    dragStartPos.current = { x: clientX, y: clientY }
+    elementStartPos.current = position
+    
+    // Attach listeners immediately
+    document.addEventListener('mousemove', handleMouseMove)
+    document.addEventListener('mouseup', handleMouseUp)
+    document.addEventListener('touchmove', handleMouseMove, { passive: false })
+    document.addEventListener('touchend', handleMouseUp)
+    
+    e.preventDefault()
+  }, [position, handleMouseMove, handleMouseUp])
 
   return {
-    isDragging,
+    isDragging: isDraggingRef.current,
     position,
     handleMouseDown,
     handleMouseMove,

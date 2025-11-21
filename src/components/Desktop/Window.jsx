@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React from 'react'
 import { motion } from 'framer-motion'
 import { X, Minus, Maximize2, Minimize2 } from 'lucide-react'
 import { useDraggable } from '../../hooks/useDraggable'
@@ -20,25 +20,12 @@ const Window = ({
   onFocus,
   onPositionChange,
   onSizeChange,
+  desktopSettings,
 }) => {
   const {
-    isDragging,
     position,
     handleMouseDown,
-    handleMouseMove,
-    handleMouseUp,
   } = useDraggable(window.position, onPositionChange)
-
-  useEffect(() => {
-    if (isDragging) {
-      document.addEventListener('mousemove', handleMouseMove)
-      document.addEventListener('mouseup', handleMouseUp)
-      return () => {
-        document.removeEventListener('mousemove', handleMouseMove)
-        document.removeEventListener('mouseup', handleMouseUp)
-      }
-    }
-  }, [isDragging, handleMouseMove, handleMouseUp])
 
   const renderApp = () => {
     switch (window.id) {
@@ -55,7 +42,7 @@ const Window = ({
       case APPS.BROWSER:
         return <BrowserApp />
       case APPS.SETTINGS:
-        return <SettingsApp />
+        return <SettingsApp settings={desktopSettings} />
       default:
         return null
     }
@@ -84,6 +71,7 @@ const Window = ({
       <div
         className={`h-12 bg-gradient-to-r ${window.color} px-4 flex items-center justify-between cursor-move relative`}
         onMouseDown={handleMouseDown}
+        onTouchStart={handleMouseDown}
       >
         {/* Traffic Lights */}
         <div className="flex items-center space-x-2 no-drag">

@@ -1,10 +1,16 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Edit3, Save } from 'lucide-react'
 
 const NotesWidget = () => {
-  const [notes, setNotes] = useState('Quick notes...')
+  const [notes, setNotes] = useState(() => {
+    return localStorage.getItem('widget_notes') || 'Quick notes...'
+  })
   const [isEditing, setIsEditing] = useState(false)
+
+  useEffect(() => {
+    localStorage.setItem('widget_notes', notes)
+  }, [notes])
 
   return (
     <motion.div
@@ -32,7 +38,7 @@ const NotesWidget = () => {
         value={notes}
         onChange={(e) => setNotes(e.target.value)}
         disabled={!isEditing}
-        className="w-full h-32 bg-white/5 border border-white/10 rounded-xl p-3 text-white placeholder-white/40 resize-none focus:outline-none focus:ring-2 focus:ring-neon-orange smooth-transition"
+        className="w-full h-32 bg-white/5 border border-white/10 rounded-xl p-3 text-white placeholder-white/40 resize-none focus:outline-none focus:ring-2 focus:ring-neon-orange smooth-transition disabled:cursor-default"
         placeholder="Write something..."
       />
     </motion.div>
@@ -40,4 +46,3 @@ const NotesWidget = () => {
 }
 
 export default NotesWidget
-

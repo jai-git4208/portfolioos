@@ -98,23 +98,23 @@ export const GITHUB_API = `https://api.github.com/users/${GITHUB_USERNAME}/repos
 
 export const USER_INFO = {
   name: 'Jaimin Pansal',
-  title: 'Founder & CTO/COO - Ivelosi Technologies',
+  title: 'Founder & CEO - Ivelosi Technologies',
   location: 'Ahmedabad, Gujarat, India',
   email: 'jaiminpansal@gmail.com',
-  phone: '+91 9714344118',
-  website: 'jaimin.ivelosi.com',
+  phone: '+91 9428912118',
+  website: 'jai.ivelosi.com',
   github: 'github.com/jai-git4208',
   bio: "Motivated and analytically driven high school student with a passion for innovation and technology. Founded Ivelosi Technologies with a vision to create cutting-edge solutions in decentralized systems and AI.",
   education: [
     {
       school: 'Airport School, Ahmedabad',
-      board: 'CBSE Board',
+      board: 'Class 11 CBSE Board',
       year: '2026 - Present',
       description: 'Currently pursuing advanced studies in science with a focus on engineering, mathematics, and computer science.',
     },
     {
       school: 'Airport School, Ahmedabad',
-      board: 'CBSE Board',
+      board: 'Class 10 CBSE Board',
       year: 'Graduated: 2025',
       achievement: '96.00%',
       description: 'Demonstrated exceptional academic performance with strong aptitude in mathematics, science, and technology subjects.',

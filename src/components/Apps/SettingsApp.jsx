@@ -1,230 +1,133 @@
-import React, { useState, useRef } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
-import { Palette, Image, Monitor, Moon, Sun, Sparkles, Volume2, Bell, Info, Zap, Smartphone, Upload } from 'lucide-react'
-import { WALLPAPERS } from '../../utils/constants'
+import { Image, Monitor, Volume2, Sun, Grid3x3, Eye, EyeOff, Layers, Upload } from 'lucide-react'
+import { WALLPAPERS, APPS, APP_CONFIG } from '../../utils/constants'
 
-const SettingsApp = ({ onSettingsChange }) => {
-  // Appearance settings
-  const [activeTab, setActiveTab] = useState('appearance')
-  const [selectedWallpaper, setSelectedWallpaper] = useState(WALLPAPERS[0])
-  const [customWallpaper, setCustomWallpaper] = useState(null)
-  const [theme, setTheme] = useState('dark')
-  const [accentColor, setAccentColor] = useState('pink')
+const SettingsApp = ({ settings }) => {
+  const [activeTab, setActiveTab] = useState('wallpaper')
   
-  // Visual effects settings
-  const [glassEffect, setGlassEffect] = useState(true)
-  const [blurEffects, setBlurEffects] = useState(true)
-  const [animations, setAnimations] = useState(true)
-  const [parallaxWallpaper, setParallaxWallpaper] = useState(true)
-  
-  // System settings
-  const [performanceMode, setPerformanceMode] = useState(false)
-  const [dockSize, setDockSize] = useState('medium')
-  
-  // Sound & Haptics
-  const [volume, setVolume] = useState(70)
-  const [vibration, setVibration] = useState(true)
-  const [soundEffects, setSoundEffects] = useState(true)
+  // Local state synced with desktop settings
+  const [wallpaper, setWallpaper] = useState(settings?.wallpaper || 1)
+  const [brightness, setBrightness] = useState(settings?.brightness || 100)
+  const [volume, setVolume] = useState(settings?.volume || 100)
+  const [hiddenApps, setHiddenApps] = useState(settings?.hiddenApps || [])
+  const [customWallpaper, setCustomWallpaper] = useState(settings?.customWallpaper || null)
+  const [widgetSettings, setWidgetSettings] = useState(settings?.widgetSettings || {
+    clock: true,
+    weather: true,
+    notes: false,
+    systemStats: false,
+  })
 
   const fileInputRef = useRef(null)
 
-  // Callback to parent (if provided)
-  const updateSettings = (newSettings) => {
-    if (onSettingsChange) {
-      onSettingsChange(newSettings)
+  // Sync local state with desktop settings when they change
+  useEffect(() => {
+    if (settings) {
+      setWallpaper(settings.wallpaper)
+      setBrightness(settings.brightness)
+      setVolume(settings.volume)
+      setHiddenApps(settings.hiddenApps)
+      setCustomWallpaper(settings.customWallpaper)
+      setWidgetSettings(settings.widgetSettings || {
+        clock: true,
+        weather: true,
+        notes: false,
+        systemStats: false,
+      })
     }
-  }
+  }, [settings])
 
-  const handleThemeChange = (newTheme) => {
-    setTheme(newTheme)
-    updateSettings({ theme: newTheme })
-  }
+  const tabs = [
+    { id: 'wallpaper', label: 'Wallpaper', icon: <Image className="w-5 h-5" /> },
+    { id: 'display', label: 'Display', icon: <Monitor className="w-5 h-5" /> },
+    { id: 'sound', label: 'Sound', icon: <Volume2 className="w-5 h-5" /> },
+    { id: 'widgets', label: 'Widgets', icon: <Layers className="w-5 h-5" /> },
+    { id: 'apps', label: 'Apps', icon: <Grid3x3 className="w-5 h-5" /> },
+  ]
 
-  const handleWallpaperChange = (wallpaper) => {
-    setSelectedWallpaper(wallpaper)
+  const handleWallpaperChange = (id) => {
+    setWallpaper(id)
     setCustomWallpaper(null)
-    updateSettings({ wallpaper: wallpaper })
+    settings?.updateWallpaper(id)
+    settings?.updateCustomWallpaper(null)
   }
 
-  const handleCustomWallpaperUpload = (event) => {
-    const file = event.target.files?.[0]
+  const handleImageUpload = (event) => {
+    const file = event.target.files[0]
     if (!file) return
 
-    if (!file.type.match('image.*')) {
-      alert('Please select an image file (JPG/PNG)')
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      alert('Please upload an image file')
       return
     }
 
-    const reader = new FileReader()
-    reader.onload = (e) => {
-      const dataUrl = e.target.result
-      setCustomWallpaper(dataUrl)
-      setSelectedWallpaper(null)
-      updateSettings({ wallpaper: dataUrl })
+    // Validate file size (max 10MB)
+    if (file.size > 10 * 1024 * 1024) {
+      alert('Image size should be less than 10MB')
+      return
     }
-    reader.readAsDataURL(file)
+
+    // Create object URL for the image
+    const imageUrl = URL.createObjectURL(file)
+    
+    setCustomWallpaper(imageUrl)
+    setWallpaper('custom')
+    settings?.updateCustomWallpaper(imageUrl)
+    settings?.updateWallpaper('custom')
   }
 
-  const tabs = [
-    { id: 'appearance', label: 'Appearance', icon: <Palette className="w-5 h-5" /> },
-    { id: 'wallpaper', label: 'Wallpaper', icon: <Image className="w-5 h-5" /> },
-    { id: 'system', label: 'System', icon: <Monitor className="w-5 h-5" /> },
-    { id: 'sound', label: 'Sound & Haptics', icon: <Volume2 className="w-5 h-5" /> },
-    { id: 'about', label: 'About', icon: <Info className="w-5 h-5" /> },
-  ]
+  const handleBrightnessChange = (value) => {
+    setBrightness(value)
+    settings?.updateBrightness(value)
+  }
 
-  const accentColors = [
-    { name: 'pink', color: 'from-pink-500 to-rose-500', value: '#ff0080' },
-    { name: 'purple', color: 'from-purple-500 to-indigo-500', value: '#b300ff' },
-    { name: 'blue', color: 'from-blue-500 to-cyan-500', value: '#00d9ff' },
-    { name: 'orange', color: 'from-orange-500 to-red-500', value: '#ff6b00' },
-    { name: 'green', color: 'from-green-500 to-emerald-500', value: '#00ff88' },
-  ]
+  const handleVolumeChange = (value) => {
+    setVolume(value)
+    settings?.updateVolume(value)
+  }
 
-  const ToggleSwitch = ({ enabled, onChange }) => (
-    <motion.button
-      whileTap={{ scale: 0.9 }}
-      onClick={onChange}
-      className={`w-14 h-7 rounded-full relative smooth-transition ${
-        enabled ? 'bg-gradient-to-r from-neon-pink to-neon-orange' : 'bg-white/20'
-      }`}
-    >
-      <motion.div
-        animate={{ x: enabled ? 28 : 2 }}
-        transition={{ type: "spring", stiffness: 500, damping: 30 }}
-        className="w-5 h-5 bg-white rounded-full absolute top-1"
-      />
-    </motion.button>
-  )
+  const toggleAppVisibility = (appId) => {
+    const newHiddenApps = hiddenApps.includes(appId)
+      ? hiddenApps.filter(id => id !== appId)
+      : [...hiddenApps, appId]
+    
+    setHiddenApps(newHiddenApps)
+    settings?.updateHiddenApps(newHiddenApps)
+  }
+
+  const toggleWidget = (widgetId) => {
+    const newSettings = { ...widgetSettings, [widgetId]: !widgetSettings[widgetId] }
+    setWidgetSettings(newSettings)
+    settings?.updateWidgetSettings(newSettings)
+  }
 
   return (
-    <div className="h-full flex flex-col md:flex-row">
+    <div className="h-full flex">
       {/* Sidebar */}
-      <div className="w-full md:w-64 border-b md:border-b-0 md:border-r border-white/10 p-4 space-y-2 overflow-x-auto md:overflow-x-visible">
+      <div className="w-64 border-r border-white/10 p-4 space-y-2">
         <h2 className="text-xl font-bold text-white mb-4 px-3">Settings</h2>
-        <div className="flex md:flex-col space-x-2 md:space-x-0 md:space-y-2">
-          {tabs.map((tab) => (
-            <motion.button
-              key={tab.id}
-              whileHover={{ x: 5 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center space-x-3 px-4 py-3 rounded-xl smooth-transition whitespace-nowrap ${
-                activeTab === tab.id
-                  ? 'bg-gradient-to-r from-neon-pink/20 to-neon-orange/20 text-white'
-                  : 'text-white/60 hover:bg-white/5'
-              }`}
-            >
-              {tab.icon}
-              <span className="font-medium">{tab.label}</span>
-            </motion.button>
-          ))}
-        </div>
+        {tabs.map((tab) => (
+          <motion.button
+            key={tab.id}
+            whileHover={{ x: 5 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={() => setActiveTab(tab.id)}
+            className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl smooth-transition ${
+              activeTab === tab.id
+                ? 'bg-gradient-to-r from-neon-pink/20 to-neon-orange/20 text-white'
+                : 'text-white/60 hover:bg-white/5'
+            }`}
+          >
+            {tab.icon}
+            <span className="font-medium">{tab.label}</span>
+          </motion.button>
+        ))}
       </div>
 
       {/* Content */}
-      <div className="flex-1 p-4 md:p-8 overflow-y-auto">
-        {activeTab === 'appearance' && (
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="space-y-6"
-          >
-            <div>
-              <h3 className="text-2xl font-bold text-white mb-2">Appearance</h3>
-              <p className="text-white/60">Customize the look and feel of your portfolio</p>
-            </div>
-
-            {/* Theme Selection */}
-            <div className="space-y-3">
-              <label className="text-white font-semibold flex items-center space-x-2">
-                <Sparkles className="w-5 h-5 text-neon-cyan" />
-                <span>Theme Mode</span>
-              </label>
-              <div className="grid grid-cols-2 gap-4">
-                {[
-                  { id: 'dark', label: 'Dark', icon: <Moon className="w-6 h-6" /> },
-                  { id: 'light', label: 'Light', icon: <Sun className="w-6 h-6" /> },
-                ].map((themeOption) => (
-                  <motion.button
-                    key={themeOption.id}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => handleThemeChange(themeOption.id)}
-                    className={`p-6 rounded-2xl flex flex-col items-center space-y-2 smooth-transition ${
-                      theme === themeOption.id
-                        ? 'bg-gradient-to-br from-neon-pink to-neon-orange ring-2 ring-white/30'
-                        : 'glass hover:bg-white/10'
-                    }`}
-                  >
-                    {themeOption.icon}
-                    <span className="text-white font-medium">{themeOption.label}</span>
-                  </motion.button>
-                ))}
-              </div>
-            </div>
-
-            {/* Accent Color */}
-            <div className="space-y-3">
-              <label className="text-white font-semibold">Accent Color</label>
-              <div className="grid grid-cols-5 gap-3">
-                {accentColors.map((color) => (
-                  <motion.button
-                    key={color.name}
-                    whileHover={{ scale: 1.1, y: -5 }}
-                    whileTap={{ scale: 0.9 }}
-                    onClick={() => {
-                      setAccentColor(color.name)
-                      updateSettings({ accentColor: color.name })
-                    }}
-                    className={`aspect-square rounded-2xl bg-gradient-to-br ${color.color} relative ${
-                      accentColor === color.name ? 'ring-4 ring-white/50' : ''
-                    }`}
-                  >
-                    {accentColor === color.name && (
-                      <motion.div
-                        initial={{ scale: 0 }}
-                        animate={{ scale: 1 }}
-                        className="absolute inset-0 flex items-center justify-center text-white text-2xl"
-                      >
-                        ✓
-                      </motion.div>
-                    )}
-                  </motion.button>
-                ))}
-              </div>
-            </div>
-
-            {/* Effects Toggle */}
-            <div className="space-y-4">
-              <label className="text-white font-semibold">Visual Effects</label>
-              {[
-                { label: 'Glassmorphism', enabled: glassEffect, setter: setGlassEffect },
-                { label: 'Blur Effects', enabled: blurEffects, setter: setBlurEffects },
-                { label: 'Animations', enabled: animations, setter: setAnimations },
-                { label: 'Parallax Wallpaper', enabled: parallaxWallpaper, setter: setParallaxWallpaper },
-              ].map((effect, index) => (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: index * 0.1 }}
-                  className="flex items-center justify-between p-4 rounded-xl glass"
-                >
-                  <span className="text-white/90">{effect.label}</span>
-                  <ToggleSwitch
-                    enabled={effect.enabled}
-                    onChange={() => {
-                      effect.setter(!effect.enabled)
-                      updateSettings({ [effect.label.toLowerCase().replace(' ', '_')]: !effect.enabled })
-                    }}
-                  />
-                </motion.div>
-              ))}
-            </div>
-          </motion.div>
-        )}
-
+      <div className="flex-1 p-8 overflow-y-auto">
         {activeTab === 'wallpaper' && (
           <motion.div
             initial={{ opacity: 0, x: 20 }}
@@ -233,59 +136,59 @@ const SettingsApp = ({ onSettingsChange }) => {
           >
             <div>
               <h3 className="text-2xl font-bold text-white mb-2">Wallpaper</h3>
-              <p className="text-white/60">Choose your desktop background</p>
+              <p className="text-white/60">Choose or upload your desktop background</p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {WALLPAPERS.map((wallpaper) => (
-                <motion.button
-                  key={wallpaper.id}
-                  whileHover={{ scale: 1.05, y: -5 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => handleWallpaperChange(wallpaper)}
-                  className={`relative rounded-2xl overflow-hidden aspect-video smooth-transition ${
-                    selectedWallpaper?.id === wallpaper.id && !customWallpaper ? 'ring-4 ring-white/50' : ''
-                  }`}
-                  style={{ background: wallpaper.value }}
-                >
-                  <div className="absolute inset-0 bg-black/20 hover:bg-black/10 smooth-transition" />
-                  
-                  {selectedWallpaper?.id === wallpaper.id && !customWallpaper && (
-                    <motion.div
-                      initial={{ scale: 0 }}
-                      animate={{ scale: 1 }}
-                      className="absolute inset-0 flex items-center justify-center"
-                    >
-                      <div className="w-12 h-12 rounded-full bg-white/90 flex items-center justify-center text-2xl">
-                        ✓
-                      </div>
-                    </motion.div>
-                  )}
-
-                  <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/60 to-transparent">
-                    <span className="text-white font-medium text-sm">{wallpaper.name}</span>
+            {/* Upload Custom Image */}
+            <div className="space-y-3">
+              <h4 className="text-white font-semibold flex items-center space-x-2">
+                <Upload className="w-5 h-5 text-neon-pink" />
+                <span>Upload Custom Image</span>
+              </h4>
+              
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleImageUpload}
+                className="hidden"
+              />
+              
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => fileInputRef.current?.click()}
+                className="w-full p-8 rounded-2xl glass border-2 border-dashed border-white/20 text-center cursor-pointer hover:bg-white/5 smooth-transition"
+              >
+                <div className="flex flex-col items-center space-y-3">
+                  <Upload className="w-12 h-12 text-white/60" />
+                  <div>
+                    <p className="text-white font-medium mb-1">Upload Custom Wallpaper</p>
+                    <p className="text-white/60 text-sm">Click to browse and select an image</p>
+                    <p className="text-white/40 text-xs mt-1">Max 10MB • JPG, PNG, WEBP</p>
                   </div>
-                </motion.button>
-              ))}
+                </div>
+              </motion.button>
+            </div>
 
-              {/* Custom Wallpaper Preview */}
-              {customWallpaper && (
+            {/* Custom Wallpaper Preview */}
+            {customWallpaper && wallpaper === 'custom' && (
+              <div className="space-y-3">
+                <h4 className="text-white font-semibold">Your Custom Wallpaper</h4>
                 <motion.div
-                  initial={{ scale: 0, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
+                  whileHover={{ scale: 1.02 }}
                   className="relative rounded-2xl overflow-hidden aspect-video ring-4 ring-white/50"
-                  style={{
-                    backgroundImage: `url(${customWallpaper})`,
-                    backgroundSize: 'cover',
-                    backgroundPosition: 'center'
-                  }}
                 >
-                  <div className="absolute inset-0 bg-black/20" />
+                  <img 
+                    src={customWallpaper} 
+                    alt="Custom wallpaper" 
+                    className="w-full h-full object-cover"
+                  />
                   
                   <motion.div
                     initial={{ scale: 0 }}
                     animate={{ scale: 1 }}
-                    className="absolute inset-0 flex items-center justify-center"
+                    className="absolute inset-0 flex items-center justify-center bg-black/20"
                   >
                     <div className="w-12 h-12 rounded-full bg-white/90 flex items-center justify-center text-2xl">
                       ✓
@@ -293,115 +196,103 @@ const SettingsApp = ({ onSettingsChange }) => {
                   </motion.div>
 
                   <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/60 to-transparent">
-                    <span className="text-white font-medium text-sm">Custom Wallpaper</span>
+                    <span className="text-white font-medium text-sm">Custom Image</span>
                   </div>
                 </motion.div>
-              )}
-            </div>
+              </div>
+            )}
 
-            {/* Upload Custom Wallpaper */}
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              onChange={handleCustomWallpaperUpload}
-              className="hidden"
-            />
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={() => fileInputRef.current?.click()}
-              className="w-full p-8 rounded-2xl glass border-2 border-dashed border-white/20 text-center cursor-pointer hover:bg-white/5 smooth-transition"
-            >
-              <Upload className="w-10 h-10 mx-auto mb-3 text-neon-cyan" />
-              <p className="text-white font-medium mb-1">Upload Custom Wallpaper</p>
-              <p className="text-white/60 text-sm">Click to browse (JPG/PNG supported)</p>
-            </motion.button>
+            {/* Preset Wallpapers */}
+            <div>
+              <h4 className="text-white font-semibold mb-3">Preset Wallpapers</h4>
+              <div className="grid grid-cols-2 gap-4">
+                {WALLPAPERS.map((wall) => (
+                  <motion.button
+                    key={wall.id}
+                    whileHover={{ scale: 1.05, y: -5 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => handleWallpaperChange(wall.id)}
+                    className={`relative rounded-2xl overflow-hidden aspect-video smooth-transition ${
+                      wallpaper === wall.id ? 'ring-4 ring-white/50' : ''
+                    }`}
+                    style={{ background: wall.value }}
+                  >
+                    <div className="absolute inset-0 bg-black/20 hover:bg-black/10 smooth-transition" />
+                    
+                    {wallpaper === wall.id && (
+                      <motion.div
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        className="absolute inset-0 flex items-center justify-center"
+                      >
+                        <div className="w-12 h-12 rounded-full bg-white/90 flex items-center justify-center text-2xl">
+                          ✓
+                        </div>
+                      </motion.div>
+                    )}
+
+                    <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/60 to-transparent">
+                      <span className="text-white font-medium text-sm">{wall.name}</span>
+                    </div>
+                  </motion.button>
+                ))}
+              </div>
+            </div>
           </motion.div>
         )}
 
-        {activeTab === 'system' && (
+        {activeTab === 'display' && (
           <motion.div
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             className="space-y-6"
           >
             <div>
-              <h3 className="text-2xl font-bold text-white mb-2">System</h3>
-              <p className="text-white/60">Performance and system preferences</p>
+              <h3 className="text-2xl font-bold text-white mb-2">Display</h3>
+              <p className="text-white/60">Adjust brightness and display settings</p>
             </div>
 
-            {/* Performance Mode */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="p-5 rounded-2xl glass"
-            >
+            {/* Brightness Slider */}
+            <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                  <Zap className={`w-6 h-6 ${performanceMode ? 'text-yellow-400' : 'text-white/60'}`} />
-                  <div>
-                    <h4 className="text-white font-semibold">Performance Mode</h4>
-                    <p className="text-white/60 text-sm">Reduce animations for better performance</p>
-                  </div>
-                </div>
-                <ToggleSwitch
-                  enabled={performanceMode}
-                  onChange={() => {
-                    setPerformanceMode(!performanceMode)
-                    updateSettings({ performanceMode: !performanceMode })
+                <label className="text-white font-semibold flex items-center space-x-2">
+                  <Sun className="w-5 h-5 text-yellow-400" />
+                  <span>Brightness</span>
+                </label>
+                <span className="text-white/80 font-medium">{brightness}%</span>
+              </div>
+              
+              <div className="relative">
+                <input
+                  type="range"
+                  min="30"
+                  max="100"
+                  value={brightness}
+                  onChange={(e) => handleBrightnessChange(parseInt(e.target.value))}
+                  className="w-full h-2 bg-white/20 rounded-lg appearance-none cursor-pointer slider"
+                  style={{
+                    background: `linear-gradient(to right, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0.4) ${brightness}%, rgba(255,255,255,0.1) ${brightness}%, rgba(255,255,255,0.1) 100%)`
                   }}
                 />
               </div>
-            </motion.div>
-
-            {/* Dock Size */}
-            <div className="space-y-3">
-              <label className="text-white font-semibold">Dock Size</label>
-              <div className="grid grid-cols-3 gap-4">
-                {['small', 'medium', 'large'].map((size) => (
-                  <motion.button
-                    key={size}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => {
-                      setDockSize(size)
-                      updateSettings({ dockSize: size })
-                    }}
-                    className={`p-4 rounded-xl smooth-transition capitalize ${
-                      dockSize === size
-                        ? 'bg-gradient-to-br from-neon-pink to-neon-orange text-white'
-                        : 'glass text-white/70 hover:bg-white/10'
-                    }`}
-                  >
-                    {size}
-                  </motion.button>
-                ))}
+              
+              <div className="flex justify-between text-white/40 text-sm">
+                <span>Dim</span>
+                <span>Bright</span>
               </div>
             </div>
 
-            {/* System Info Cards */}
-            <div className="space-y-4">
-              {[
-                { label: 'Window Animations', value: animations ? 'Enabled' : 'Disabled' },
-                { label: 'Blur Effects', value: blurEffects ? 'Enabled' : 'Disabled' },
-                { label: 'Theme', value: theme === 'dark' ? 'Dark Mode' : 'Light Mode' },
-              ].map((setting, index) => (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.1 }}
-                  className="p-5 rounded-2xl glass"
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="text-white/90">{setting.label}</span>
-                    <div className="px-4 py-2 rounded-lg bg-white/10 text-white font-medium text-sm">
-                      {setting.value}
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
+            {/* Preview */}
+            <div className="p-6 rounded-2xl glass">
+              <h4 className="text-white font-semibold mb-4">Preview</h4>
+              <div 
+                className="aspect-video rounded-xl bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 relative overflow-hidden"
+                style={{ filter: `brightness(${brightness}%)` }}
+              >
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <Sun className="w-16 h-16 text-white/60" />
+                </div>
+              </div>
             </div>
           </motion.div>
         )}
@@ -413,121 +304,205 @@ const SettingsApp = ({ onSettingsChange }) => {
             className="space-y-6"
           >
             <div>
-              <h3 className="text-2xl font-bold text-white mb-2">Sound & Haptics</h3>
-              <p className="text-white/60">Audio and vibration settings</p>
+              <h3 className="text-2xl font-bold text-white mb-2">Sound</h3>
+              <p className="text-white/60">Control system volume and audio settings</p>
             </div>
 
             {/* Volume Slider */}
-            <div className="space-y-3">
+            <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <label className="text-white font-semibold flex items-center space-x-2">
-                  <Volume2 className="w-5 h-5 text-neon-cyan" />
-                  <span>Volume</span>
+                  <Volume2 className="w-5 h-5 text-blue-400" />
+                  <span>System Volume</span>
                 </label>
-                <span className="text-white/80 font-mono">{volume}%</span>
+                <span className="text-white/80 font-medium">{volume}%</span>
               </div>
+              
               <div className="relative">
                 <input
                   type="range"
                   min="0"
                   max="100"
                   value={volume}
-                  onChange={(e) => {
-                    setVolume(Number(e.target.value))
-                    updateSettings({ volume: Number(e.target.value) })
-                  }}
-                  className="w-full h-2 bg-white/20 rounded-full appearance-none cursor-pointer slider"
+                  onChange={(e) => handleVolumeChange(parseInt(e.target.value))}
+                  className="w-full h-2 bg-white/20 rounded-lg appearance-none cursor-pointer slider"
                   style={{
-                    background: `linear-gradient(to right, #ff0080 0%, #ff6b00 ${volume}%, rgba(255,255,255,0.2) ${volume}%, rgba(255,255,255,0.2) 100%)`
+                    background: `linear-gradient(to right, rgba(59,130,246,0.6) 0%, rgba(59,130,246,0.6) ${volume}%, rgba(255,255,255,0.1) ${volume}%, rgba(255,255,255,0.1) 100%)`
                   }}
                 />
               </div>
+              
+              <div className="flex justify-between text-white/40 text-sm">
+                <span>Mute</span>
+                <span>Max</span>
+              </div>
             </div>
 
-            {/* Sound & Vibration Toggles */}
-            <div className="space-y-4">
-              {[
-                { label: 'Sound Effects', description: 'Play sounds for UI interactions', enabled: soundEffects, setter: setSoundEffects },
-                { label: 'Vibration', description: 'Haptic feedback on mobile devices', enabled: vibration, setter: setVibration, icon: <Smartphone className="w-5 h-5 text-neon-pink" /> },
-                { label: 'Notification Sounds', description: 'Play sounds for notifications', enabled: true, setter: () => {}, icon: <Bell className="w-5 h-5 text-neon-orange" /> },
-              ].map((setting, index) => (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.1 }}
-                  className="flex items-center justify-between p-5 rounded-2xl glass"
-                >
-                  <div className="flex items-center space-x-3">
-                    {setting.icon}
-                    <div>
-                      <h4 className="text-white font-semibold">{setting.label}</h4>
-                      <p className="text-white/60 text-sm">{setting.description}</p>
-                    </div>
-                  </div>
-                  <ToggleSwitch
-                    enabled={setting.enabled}
-                    onChange={() => {
-                      setting.setter(!setting.enabled)
-                      updateSettings({ [setting.label.toLowerCase().replace(' ', '_')]: !setting.enabled })
-                    }}
-                  />
-                </motion.div>
-              ))}
+            {/* Volume Indicator */}
+            <div className="p-8 rounded-2xl glass flex flex-col items-center justify-center space-y-4">
+              <Volume2 className="w-20 h-20 text-blue-400" />
+              <div className="text-center">
+                <div className="text-4xl font-bold text-white mb-2">{volume}%</div>
+                <div className="text-white/60">Current Volume Level</div>
+              </div>
             </div>
           </motion.div>
         )}
 
-        {activeTab === 'about' && (
+        {activeTab === 'widgets' && (
           <motion.div
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             className="space-y-6"
           >
             <div>
-              <h3 className="text-2xl font-bold text-white mb-2">About Device</h3>
-              <p className="text-white/60">System information and details</p>
+              <h3 className="text-2xl font-bold text-white mb-2">Widgets</h3>
+              <p className="text-white/60">Show or hide desktop widgets</p>
             </div>
 
-            {/* Device Info Card */}
-            <motion.div
-              className="p-8 rounded-3xl bg-gradient-to-br from-purple-600/20 via-pink-600/20 to-orange-600/20 backdrop-blur-xl border border-white/10"
-            >
-              <div className="text-center mb-6">
-                <div className="w-20 h-20 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-neon-pink to-neon-orange flex items-center justify-center">
-                  <Monitor className="w-10 h-10 text-white" />
+            {/* Widgets List */}
+            <div className="space-y-3">
+              {[
+                { id: 'clock', name: 'Clock Widget', icon: '🕐', description: 'Display current time and date' },
+                { id: 'weather', name: 'Weather Widget', icon: '🌤️', description: 'Real-time weather information' },
+                { id: 'notes', name: 'Quick Notes', icon: '📝', description: 'Take quick notes on desktop' },
+                { id: 'systemStats', name: 'System Stats', icon: '📊', description: 'Monitor CPU, RAM, and storage' },
+              ].map((widget, index) => (
+                <motion.div
+                  key={widget.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                  whileHover={{ x: 5 }}
+                  className={`p-5 rounded-2xl glass hover:bg-white/10 smooth-transition ${
+                    !widgetSettings[widget.id] ? 'opacity-50' : ''
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-4">
+                      <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center text-3xl deep-shadow">
+                        {widget.icon}
+                      </div>
+                      <div>
+                        <h4 className="text-white font-semibold">{widget.name}</h4>
+                        <p className="text-white/60 text-sm">{widget.description}</p>
+                      </div>
+                    </div>
+                    
+                    <motion.button
+                      whileTap={{ scale: 0.9 }}
+                      onClick={() => toggleWidget(widget.id)}
+                      className={`w-14 h-7 rounded-full relative smooth-transition ${
+                        widgetSettings[widget.id] ? 'bg-gradient-to-r from-neon-pink to-neon-orange' : 'bg-white/20'
+                      }`}
+                    >
+                      <motion.div
+                        animate={{ x: widgetSettings[widget.id] ? 28 : 2 }}
+                        transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                        className="w-5 h-5 bg-white rounded-full absolute top-1"
+                      />
+                    </motion.button>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+
+            {/* Info Box */}
+            <div className="p-6 rounded-2xl bg-blue-500/10 border border-blue-500/20">
+              <div className="flex items-start space-x-3">
+                <div className="text-2xl">ℹ️</div>
+                <div>
+                  <h4 className="text-white font-semibold mb-1">About Widgets</h4>
+                  <p className="text-white/70 text-sm">
+                    Widgets appear in the top-right corner of your desktop. Toggle them on or off to customize your workspace.
+                  </p>
                 </div>
-                <h4 className="text-2xl font-bold text-white mb-1">Portfolio OS</h4>
-                <p className="text-white/60">Version 2.0.25</p>
               </div>
+            </div>
+          </motion.div>
+        )}
 
-              <div className="space-y-3">
-                {[
-                  { label: 'Device Name', value: 'Developer Machine' },
-                  { label: 'OS Version', value: 'PortfolioOS 2.0.25' },
-                  { label: 'Build Number', value: '20251120' },
-                  { label: 'Theme', value: theme === 'dark' ? 'Dark Mode' : 'Light Mode' },
-                  { label: 'Accent Color', value: accentColor.charAt(0).toUpperCase() + accentColor.slice(1) },
-                  { label: 'Performance', value: performanceMode ? 'High Performance' : 'Balanced' },
-                ].map((info, index) => (
+        {activeTab === 'apps' && (
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            className="space-y-6"
+          >
+            <div>
+              <h3 className="text-2xl font-bold text-white mb-2">Apps Management</h3>
+              <p className="text-white/60">Show or hide apps from your dock and launcher</p>
+            </div>
+
+            {/* Apps List */}
+            <div className="space-y-3">
+              {Object.values(APPS).map((appId) => {
+                const app = APP_CONFIG[appId]
+                const isHidden = hiddenApps.includes(appId)
+                
+                return (
                   <motion.div
-                    key={index}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: index * 0.05 }}
-                    className="flex justify-between items-center py-3 border-b border-white/10 last:border-0"
+                    key={appId}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    whileHover={{ x: 5 }}
+                    className={`p-5 rounded-2xl glass hover:bg-white/10 smooth-transition ${
+                      isHidden ? 'opacity-50' : ''
+                    }`}
                   >
-                    <span className="text-white/70">{info.label}</span>
-                    <span className="text-white font-medium">{info.value}</span>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-4">
+                        <div 
+                          className={`w-14 h-14 rounded-xl bg-gradient-to-br ${app.color} flex items-center justify-center text-3xl deep-shadow`}
+                        >
+                          {app.icon}
+                        </div>
+                        <div>
+                          <h4 className="text-white font-semibold">{app.title}</h4>
+                          <p className="text-white/60 text-sm">
+                            {isHidden ? 'Hidden from dock' : 'Visible in dock'}
+                          </p>
+                        </div>
+                      </div>
+                      
+                      <motion.button
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => toggleAppVisibility(appId)}
+                        className={`px-6 py-2 rounded-lg font-medium smooth-transition ${
+                          isHidden
+                            ? 'bg-green-500/20 text-green-400 hover:bg-green-500/30'
+                            : 'bg-red-500/20 text-red-400 hover:bg-red-500/30'
+                        }`}
+                      >
+                        {isHidden ? (
+                          <span className="flex items-center space-x-2">
+                            <Eye className="w-4 h-4" />
+                            <span>Show</span>
+                          </span>
+                        ) : (
+                          <span className="flex items-center space-x-2">
+                            <EyeOff className="w-4 h-4" />
+                            <span>Hide</span>
+                          </span>
+                        )}
+                      </motion.button>
+                    </div>
                   </motion.div>
-                ))}
-              </div>
-            </motion.div>
+                )
+              })}
+            </div>
 
-            {/* Legal & Credits */}
-            <div className="p-6 rounded-2xl glass text-center">
-              <p className="text-white/60 text-sm mb-2">Built with React, Tailwind CSS & Framer Motion</p>
-              <p className="text-white/40 text-xs">© 2025 Portfolio OS. All rights reserved.</p>
+            {/* Info Box */}
+            <div className="p-6 rounded-2xl bg-blue-500/10 border border-blue-500/20">
+              <div className="flex items-start space-x-3">
+                <div className="text-2xl">ℹ️</div>
+                <div>
+                  <h4 className="text-white font-semibold mb-1">About App Management</h4>
+                  <p className="text-white/70 text-sm">
+                    Hidden apps won't appear in your dock or launcher, but you can always show them again from this settings panel.
+                  </p>
+                </div>
+              </div>
             </div>
           </motion.div>
         )}

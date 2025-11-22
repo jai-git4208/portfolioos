@@ -15,7 +15,7 @@ const WeatherWidget = () => {
   const [error, setError] = useState(null)
 
   // Replace with your OpenWeatherMap API key
-  const API_KEY = 'YOUR_API_KEY_HERE' // Get free key from https://openweathermap.org/api
+  const API_KEY = '25b5d77c66848b45c3994cbc52df78c4' // Get free key from https://openweathermap.org/api
   const CITY = 'Ahmedabad'
   const COUNTRY = 'IN'
 

@@ -16,14 +16,14 @@ const ContactApp = () => {
   const handleSubmit = async (e) => {
     e.preventDefault()
     setIsSubmitting(true)
-    
+
     // Simulate form submission
     await new Promise(resolve => setTimeout(resolve, 2000))
-    
+
     setIsSubmitting(false)
     setSubmitted(true)
     setFormData({ name: '', email: '', subject: '', message: '' })
-    
+
     setTimeout(() => setSubmitted(false), 3000)
   }
 
@@ -50,7 +50,7 @@ const ContactApp = () => {
           animate={{ opacity: 1, x: 0 }}
         >
           <h1 className="text-4xl font-bold gradient-text mb-2">Get In Touch</h1>
-          <p className="text-white/60">Let's discuss your next project or collaboration</p>
+          <p className="text-[var(--text-secondary)]">Let's discuss your next project or collaboration</p>
         </motion.div>
 
         {/* Contact Cards */}
@@ -91,7 +91,7 @@ const ContactApp = () => {
           transition={{ delay: 0.5 }}
           className="space-y-3"
         >
-          <h2 className="text-xl font-bold text-white">Connect With Me</h2>
+          <h2 className="text-xl font-bold text-[var(--text-primary)]">Connect With Me</h2>
           <div className="grid grid-cols-2 gap-3">
             {socialLinks.map((social, index) => (
               <motion.a
@@ -104,7 +104,7 @@ const ContactApp = () => {
                 transition={{ delay: 0.6 + index * 0.05 }}
                 whileHover={{ scale: 1.1, y: -5 }}
                 whileTap={{ scale: 0.95 }}
-                className={`p-4 rounded-2xl bg-gradient-to-br ${social.color} glass-strong flex flex-col items-center justify-center space-y-2 text-white`}
+                className={`p-4 rounded-2xl bg-gradient-to-br ${social.color} border border-[var(--border-secondary)] flex flex-col items-center justify-center space-y-2 text-white`}
               >
                 {social.icon}
                 <span className="text-sm font-medium">{social.label}</span>
@@ -119,61 +119,61 @@ const ContactApp = () => {
         initial={{ opacity: 0, x: 20 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ delay: 0.3 }}
-        className="lg:col-span-3 rounded-3xl glass p-6"
+        className="lg:col-span-3 rounded-3xl bg-[var(--bg-secondary)] border border-[var(--border-dim)] p-6"
       >
-        <h2 className="text-2xl font-bold text-white mb-6">Send a Message</h2>
-        
+        <h2 className="text-2xl font-bold text-[var(--accent)] mb-6">Send a Message</h2>
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-white/80 mb-2 text-sm font-medium">Your Name</label>
+              <label className="block text-[var(--text-secondary)] mb-2 text-sm font-medium">Your Name</label>
               <input
                 type="text"
                 name="name"
                 value={formData.name}
                 onChange={handleChange}
                 required
-                className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-neon-pink focus:border-transparent smooth-transition"
+                className="w-full px-4 py-3 rounded-xl bg-[var(--bg-tertiary)] border border-[var(--border-dim)] text-[var(--text-primary)] placeholder-[var(--text-dim)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:border-transparent smooth-transition"
                 placeholder="John Doe"
               />
             </div>
-            
+
             <div>
-              <label className="block text-white/80 mb-2 text-sm font-medium">Your Email</label>
+              <label className="block text-[var(--text-secondary)] mb-2 text-sm font-medium">Your Email</label>
               <input
                 type="email"
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
                 required
-                className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-neon-pink focus:border-transparent smooth-transition"
+                className="w-full px-4 py-3 rounded-xl bg-[var(--bg-tertiary)] border border-[var(--border-dim)] text-[var(--text-primary)] placeholder-[var(--text-dim)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:border-transparent smooth-transition"
                 placeholder="john@example.com"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-white/80 mb-2 text-sm font-medium">Subject</label>
+            <label className="block text-[var(--text-secondary)] mb-2 text-sm font-medium">Subject</label>
             <input
               type="text"
               name="subject"
               value={formData.subject}
               onChange={handleChange}
               required
-              className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-neon-pink focus:border-transparent smooth-transition"
+              className="w-full px-4 py-3 rounded-xl bg-[var(--bg-tertiary)] border border-[var(--border-dim)] text-[var(--text-primary)] placeholder-[var(--text-dim)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:border-transparent smooth-transition"
               placeholder="Project Collaboration"
             />
           </div>
 
           <div>
-            <label className="block text-white/80 mb-2 text-sm font-medium">Message</label>
+            <label className="block text-[var(--text-secondary)] mb-2 text-sm font-medium">Message</label>
             <textarea
               name="message"
               value={formData.message}
               onChange={handleChange}
               required
               rows="6"
-              className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-white/40 focus:outline-none focus:ring-2 focus:ring-neon-pink focus:border-transparent smooth-transition resize-none"
+              className="w-full px-4 py-3 rounded-xl bg-[var(--bg-tertiary)] border border-[var(--border-dim)] text-[var(--text-primary)] placeholder-[var(--text-dim)] focus:outline-none focus:ring-2 focus:ring-[var(--accent)] focus:border-transparent smooth-transition resize-none"
               placeholder="Tell me about your project..."
             />
           </div>
@@ -183,11 +183,10 @@ const ContactApp = () => {
             disabled={isSubmitting || submitted}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            className={`w-full py-4 rounded-xl font-semibold text-white flex items-center justify-center space-x-2 smooth-transition ${
-              submitted
+            className={`w-full py-4 rounded-xl font-semibold text-white flex items-center justify-center space-x-2 smooth-transition ${submitted
                 ? 'bg-gradient-to-r from-green-500 to-emerald-500'
                 : 'bg-gradient-to-r from-neon-pink to-neon-orange hover:from-neon-pink/80 hover:to-neon-orange/80'
-            } ${isSubmitting || submitted ? 'opacity-75 cursor-not-allowed' : ''}`}
+              } ${isSubmitting || submitted ? 'opacity-75 cursor-not-allowed' : ''}`}
           >
             {isSubmitting ? (
               <>

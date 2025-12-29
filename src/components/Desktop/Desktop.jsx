@@ -15,27 +15,28 @@ import SystemStatsWidget from '../Widgets/SystemStatsWidget'
 const Desktop = () => {
   const windowManager = useWindowManager()
   const [showSpotlight, setShowSpotlight] = useState(false)
-  
+
   // Load settings from localStorage
   const [wallpaper, setWallpaper] = useState(() => {
     const saved = localStorage.getItem('desktop_wallpaper')
-    return saved ? saved : 1
+    return saved ? saved : 'custom'
   })
-  
+
   const [customWallpaper, setCustomWallpaper] = useState(() => {
-    return localStorage.getItem('desktop_custom_wallpaper')
+    const saved = localStorage.getItem('desktop_custom_wallpaper')
+    return saved ? saved : '/frieren.jpg'
   })
-  
+
   const [brightness, setBrightness] = useState(() => {
     const saved = localStorage.getItem('desktop_brightness')
     return saved ? parseInt(saved) : 100
   })
-  
+
   const [volume, setVolume] = useState(() => {
     const saved = localStorage.getItem('desktop_volume')
     return saved ? parseInt(saved) : 100
   })
-  
+
   const [hiddenApps, setHiddenApps] = useState(() => {
     const saved = localStorage.getItem('desktop_hidden_apps')
     return saved ? JSON.parse(saved) : []
@@ -50,6 +51,23 @@ const Desktop = () => {
       systemStats: false,
     }
   })
+
+  // Persistent widget positions
+  const [widgetPositions, setWidgetPositions] = useState(() => {
+    const saved = localStorage.getItem('desktop_widget_positions')
+    return saved ? JSON.parse(saved) : {
+      clock: { x: window.innerWidth - 320, y: 100 },
+      weather: { x: window.innerWidth - 320, y: 350 },
+      notes: { x: 50, y: 100 },
+      systemStats: { x: 50, y: 400 },
+    }
+  })
+
+  const updateWidgetPosition = (id, pos) => {
+    const newPositions = { ...widgetPositions, [id]: pos }
+    setWidgetPositions(newPositions)
+    localStorage.setItem('desktop_widget_positions', JSON.stringify(newPositions))
+  }
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -93,7 +111,7 @@ const Desktop = () => {
   const updateVolume = (value) => {
     setVolume(value)
     localStorage.setItem('desktop_volume', value.toString())
-    
+
     // Update all audio elements
     document.querySelectorAll('audio').forEach(audio => {
       audio.volume = value / 100
@@ -111,28 +129,39 @@ const Desktop = () => {
   }
 
   return (
-    <div 
+    <div
       className="relative w-full h-full overflow-hidden"
       style={{ filter: `brightness(${brightness}%)` }}
     >
       {/* Animated Wallpaper */}
       <Wallpaper wallpaperId={wallpaper} customWallpaper={customWallpaper} />
 
-      {/* Desktop Widgets - Top Right */}
-      <motion.div
-        initial={{ opacity: 0, x: 50 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ delay: 0.5 }}
-        className="absolute top-24 right-8 space-y-4 z-10"
-      >
-        {widgetSettings.clock && <ClockWidget />}
-        {widgetSettings.weather && <WeatherWidget />}
-        {widgetSettings.notes && <NotesWidget />}
-        {widgetSettings.systemStats && <SystemStatsWidget />}
-      </motion.div>
+      {/* Desktop Widgets */}
+      <div className="absolute inset-0 pointer-events-none z-10">
+        {widgetSettings.clock && (
+          <div className="pointer-events-auto" style={{ position: 'absolute', left: widgetPositions.clock.x, top: widgetPositions.clock.y }}>
+            <ClockWidget onPositionChange={(pos) => updateWidgetPosition('clock', pos)} position={widgetPositions.clock} />
+          </div>
+        )}
+        {widgetSettings.weather && (
+          <div className="pointer-events-auto" style={{ position: 'absolute', left: widgetPositions.weather.x, top: widgetPositions.weather.y }}>
+            <WeatherWidget onPositionChange={(pos) => updateWidgetPosition('weather', pos)} position={widgetPositions.weather} />
+          </div>
+        )}
+        {widgetSettings.notes && (
+          <div className="pointer-events-auto" style={{ position: 'absolute', left: widgetPositions.notes.x, top: widgetPositions.notes.y }}>
+            <NotesWidget onPositionChange={(pos) => updateWidgetPosition('notes', pos)} position={widgetPositions.notes} />
+          </div>
+        )}
+        {widgetSettings.systemStats && (
+          <div className="pointer-events-auto" style={{ position: 'absolute', left: widgetPositions.systemStats.x, top: widgetPositions.systemStats.y }}>
+            <SystemStatsWidget onPositionChange={(pos) => updateWidgetPosition('systemStats', pos)} position={widgetPositions.systemStats} />
+          </div>
+        )}
+      </div>
 
       {/* Top Bar */}
-      <Topbar 
+      <Topbar
         onSpotlightToggle={() => setShowSpotlight(prev => !prev)}
         minimizedWindows={windowManager.windows.filter(w => w.minimized)}
         onWindowRestore={windowManager.restoreWindow}
@@ -180,7 +209,7 @@ const Desktop = () => {
       ))}
 
       {/* Dock */}
-      <Dock 
+      <Dock
         onAppOpen={handleAppOpen}
         openWindows={windowManager.windows}
         onWindowRestore={windowManager.restoreWindow}

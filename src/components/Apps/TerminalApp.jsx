@@ -101,7 +101,7 @@ const TerminalApp = () => {
 
     cd: (args) => {
       if (!args[0]) return ['Usage: cd [directory]']
-      
+
       if (args[0] === '..') {
         if (currentPath === '~') return ['Already at root directory']
         const parts = currentPath.split('/')
@@ -110,20 +110,20 @@ const TerminalApp = () => {
         setCurrentPath(newPath)
         return [`Changed directory to ${newPath}`]
       }
-      
+
       const newPath = currentPath === '~' ? `~/${args[0]}` : `${currentPath}/${args[0]}`
-      
+
       if (fileSystem[newPath]) {
         setCurrentPath(newPath)
         return [`Changed directory to ${newPath}`]
       }
-      
+
       return [`cd: ${args[0]}: No such directory`]
     },
 
     cat: (args) => {
       if (!args[0]) return ['Usage: cat [file]']
-      
+
       const files = {
         'about.txt': [
           USER_INFO.bio,
@@ -166,7 +166,7 @@ const TerminalApp = () => {
           '',
         ],
       }
-      
+
       return files[args[0]] || [`cat: ${args[0]}: No such file`]
     },
 
@@ -218,29 +218,23 @@ const TerminalApp = () => {
 
     'sudo rm -rf /': () => [
       '',
-      '⚠️  WARNING: CRITICAL SYSTEM OPERATION DETECTED ⚠️',
+      '[SYSTEM WARNING] CRITICAL OPERATION DETECTED',
       '',
-      '┌─────────────────────────────────────────┐',
-      '│  You are about to delete EVERYTHING!    │',
-      '│  This will destroy the universe...      │',
-      '│  Just kidding! But watch this...        │',
-      '└─────────────────────────────────────────┘',
+      'Proceeding with file system deletion...',
+      '[##############################] 100%',
       '',
-      '[████████████████████████████] 100%',
+      'SYSTEM DESTROYED.',
+      'Rebooting...',
       '',
-      '💥 System destroyed successfully!',
-      '🔄 Rebooting universe in 3... 2... 1...',
-      '',
-      '...just kidding! Refreshing page instead 😎',
+      'Just kidding. Refreshing session...',
       '',
     ].concat(
-      // Actually refresh after 3 seconds
       setTimeout(() => window.location.reload(), 3000),
       []
     ),
 
     exit: () => {
-      return ['Goodbye! 👋']
+      return ['[PROCESS TERMINATED]']
     },
 
     echo: (args) => [args.join(' ')],
@@ -303,26 +297,19 @@ const TerminalApp = () => {
   }
 
   return (
-    <div 
-      className="h-full w-full bg-black/95 text-green-400 font-mono text-sm p-4 md:p-6 overflow-hidden flex flex-col"
+    <div
+      className="h-full w-full bg-[var(--bg-primary)] text-[var(--accent)] font-mono text-sm p-4 md:p-6 overflow-hidden flex flex-col"
       onClick={() => inputRef.current?.focus()}
     >
-      {/* Terminal Header */}
-      <div className="flex items-center space-x-2 mb-4 pb-3 border-b border-green-400/20">
-        <div className="flex space-x-2">
-          <div className="w-3 h-3 rounded-full bg-red-500" />
-          <div className="w-3 h-3 rounded-full bg-yellow-500" />
-          <div className="w-3 h-3 rounded-full bg-green-500" />
-        </div>
-        <div className="text-green-400/60 text-xs ml-4">
-          {USER_INFO.name}@portfolio-os: {currentPath}
-        </div>
+      {/* Terminal Header (Text Only) */}
+      <div className="flex items-center space-x-2 mb-4 pb-2 border-b border-[var(--border-dim)] text-xs text-[var(--text-dim)] uppercase tracking-widest selection:bg-[var(--accent)] selection:text-[var(--bg-tertiary)]">
+        <span>{USER_INFO.name}@portfolio-os:{currentPath}</span>
       </div>
 
       {/* Terminal Output */}
-      <div 
+      <div
         ref={outputRef}
-        className="flex-1 overflow-y-auto mb-4 space-y-1 scrollbar-thin scrollbar-thumb-green-400/20 scrollbar-track-transparent"
+        className="flex-1 overflow-y-auto mb-4 space-y-1 scrollbar-thin scrollbar-thumb-[var(--border-dim)] scrollbar-track-transparent"
       >
         {history.map((item, index) => (
           <motion.div
@@ -330,7 +317,7 @@ const TerminalApp = () => {
             initial={{ opacity: 0, y: 5 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.1 }}
-            className={`${item.type === 'input' ? 'text-green-400 font-semibold' : 'text-green-300/80'} whitespace-pre-wrap break-words`}
+            className={`${item.type === 'input' ? 'text-[var(--accent)] font-semibold' : 'text-[var(--text-primary)]'} whitespace-pre-wrap break-words`}
           >
             {item.content}
           </motion.div>
@@ -339,7 +326,7 @@ const TerminalApp = () => {
 
       {/* Terminal Input */}
       <form onSubmit={handleSubmit} className="flex items-center space-x-2">
-        <span className="text-green-400 font-semibold flex-shrink-0">
+        <span className="text-[var(--accent)] font-semibold flex-shrink-0">
           {currentPath} $
         </span>
         <input
@@ -348,7 +335,7 @@ const TerminalApp = () => {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
-          className="flex-1 bg-transparent text-green-400 outline-none caret-green-400"
+          className="flex-1 bg-transparent text-[var(--accent)] outline-none caret-[var(--accent)]"
           autoFocus
           spellCheck="false"
           autoComplete="off"
@@ -356,7 +343,7 @@ const TerminalApp = () => {
         <motion.span
           animate={{ opacity: [1, 0] }}
           transition={{ duration: 0.8, repeat: Infinity }}
-          className="text-green-400"
+          className="text-[var(--accent)]"
         >
           ▋
         </motion.span>

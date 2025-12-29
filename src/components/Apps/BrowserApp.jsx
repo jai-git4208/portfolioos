@@ -22,50 +22,50 @@ const BrowserApp = () => {
   ]
 
   return (
-    <div className="h-full flex flex-col bg-gray-900/50">
+    <div className="h-full flex flex-col bg-[var(--bg-primary)]/50">
       {/* Browser Controls */}
-      <div className="p-4 space-y-3 border-b border-white/10">
+      <div className="p-4 space-y-3 border-b border-[var(--border-dim)]">
         {/* Navigation Buttons */}
         <div className="flex items-center space-x-2">
           <motion.button
-            whileHover={{ scale: 1.1, backgroundColor: 'rgba(255,255,255,0.1)' }}
+            whileHover={{ scale: 1.1, backgroundColor: 'var(--border-dim)' }}
             whileTap={{ scale: 0.9 }}
             className="p-2 rounded-lg smooth-transition"
           >
-            <ArrowLeft className="w-5 h-5 text-white/80" />
+            <ArrowLeft className="w-5 h-5 text-[var(--text-primary)]" />
           </motion.button>
           <motion.button
-            whileHover={{ scale: 1.1, backgroundColor: 'rgba(255,255,255,0.1)' }}
+            whileHover={{ scale: 1.1, backgroundColor: 'var(--border-dim)' }}
             whileTap={{ scale: 0.9 }}
             className="p-2 rounded-lg smooth-transition"
           >
-            <ArrowRight className="w-5 h-5 text-white/80" />
+            <ArrowRight className="w-5 h-5 text-[var(--text-primary)]" />
           </motion.button>
           <motion.button
-            whileHover={{ scale: 1.1, backgroundColor: 'rgba(255,255,255,0.1)' }}
+            whileHover={{ scale: 1.1, backgroundColor: 'var(--border-dim)' }}
             whileTap={{ scale: 0.9 }}
             className="p-2 rounded-lg smooth-transition"
           >
-            <RotateCw className="w-5 h-5 text-white/80" />
+            <RotateCw className="w-5 h-5 text-[var(--text-primary)]" />
           </motion.button>
           <motion.button
-            whileHover={{ scale: 1.1, backgroundColor: 'rgba(255,255,255,0.1)' }}
+            whileHover={{ scale: 1.1, backgroundColor: 'var(--border-dim)' }}
             whileTap={{ scale: 0.9 }}
             className="p-2 rounded-lg smooth-transition"
           >
-            <Home className="w-5 h-5 text-white/80" />
+            <Home className="w-5 h-5 text-[var(--text-primary)]" />
           </motion.button>
         </div>
 
         {/* URL Bar */}
         <form onSubmit={handleNavigate} className="flex items-center space-x-2">
-          <div className="flex-1 flex items-center space-x-2 px-4 py-3 rounded-xl bg-white/5 border border-white/10">
-            <Lock className="w-4 h-4 text-green-400" />
+          <div className="flex-1 flex items-center space-x-2 px-4 py-3 rounded-xl bg-[var(--bg-secondary)] border border-[var(--border-dim)]">
+            <Lock className="w-4 h-4 text-[var(--accent)]" />
             <input
               type="text"
               value={inputUrl}
               onChange={(e) => setInputUrl(e.target.value)}
-              className="flex-1 bg-transparent text-white outline-none placeholder-white/40"
+              className="flex-1 bg-transparent text-[var(--text-primary)] outline-none placeholder-[var(--text-dim)]"
               placeholder="Enter URL..."
             />
           </div>
@@ -82,10 +82,10 @@ const BrowserApp = () => {
                 setUrl(link.url)
                 setInputUrl(link.url)
               }}
-              className="px-4 py-2 rounded-lg glass hover:bg-white/10 smooth-transition flex items-center space-x-2"
+              className="px-4 py-2 rounded-lg glass bg-[var(--bg-secondary)] hover:bg-[var(--bg-tertiary)] border border-[var(--border-dim)] smooth-transition flex items-center space-x-2"
             >
               <span>{link.icon}</span>
-              <span className="text-white/80 text-sm">{link.name}</span>
+              <span className="text-[var(--text-primary)] text-sm">{link.name}</span>
             </motion.button>
           ))}
         </div>

@@ -40,21 +40,23 @@ export const useDraggable = (initialPosition, onPositionChange) => {
   const handleMouseDown = useCallback((e) => {
     // Ignore if clicking on no-drag elements
     if (e.target.closest('.no-drag')) return
-    
+
     const clientX = e.clientX ?? e.touches?.[0]?.clientX
     const clientY = e.clientY ?? e.touches?.[0]?.clientY
 
     isDraggingRef.current = true
     dragStartPos.current = { x: clientX, y: clientY }
     elementStartPos.current = position
-    
+
     // Attach listeners immediately
     document.addEventListener('mousemove', handleMouseMove)
     document.addEventListener('mouseup', handleMouseUp)
     document.addEventListener('touchmove', handleMouseMove, { passive: false })
     document.addEventListener('touchend', handleMouseUp)
-    
-    e.preventDefault()
+
+    if (e.cancelable) {
+      e.preventDefault()
+    }
   }, [position, handleMouseMove, handleMouseUp])
 
   return {

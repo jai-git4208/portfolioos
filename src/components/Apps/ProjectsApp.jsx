@@ -58,16 +58,16 @@ const ProjectsApp = () => {
         className="text-center mb-8"
       >
         <h1 className="text-4xl font-bold gradient-text mb-2">My Projects</h1>
-        <p className="text-white/60">Building innovative solutions with cutting-edge technology</p>
+        <p className="text-[var(--text-secondary)]">Building innovative solutions with cutting-edge technology</p>
       </motion.div>
 
       {/* Featured Projects */}
       <div className="space-y-4">
-        <h2 className="text-2xl font-bold text-white flex items-center space-x-2">
+        <h2 className="text-2xl font-bold text-[var(--text-primary)] flex items-center space-x-2">
           <span className="text-3xl">⭐</span>
           <span>Featured Projects</span>
         </h2>
-        
+
         {featuredProjects.map((project, index) => (
           <motion.div
             key={index}
@@ -89,9 +89,9 @@ const ProjectsApp = () => {
                   </div>
                 </div>
               </div>
-              
+
               <p className="text-white/90 mb-4 text-lg">{project.description}</p>
-              
+
               <div className="flex flex-wrap gap-2">
                 {project.tech.map((tech, techIndex) => (
                   <span
@@ -112,11 +112,11 @@ const ProjectsApp = () => {
 
       {/* GitHub Repositories */}
       <div className="space-y-4">
-        <h2 className="text-2xl font-bold text-white flex items-center space-x-2">
-          <Github className="w-8 h-8 text-neon-purple" />
+        <h2 className="text-2xl font-bold text-[var(--accent)] flex items-center space-x-2">
+          <Github className="w-8 h-8 text-[var(--accent)]" />
           <span>GitHub Repositories</span>
         </h2>
-        
+
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {repos.map((repo, index) => (
             <motion.a
@@ -128,15 +128,15 @@ const ProjectsApp = () => {
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.2 + index * 0.05 }}
               whileHover={{ scale: 1.05, y: -5 }}
-              className="p-5 rounded-2xl glass hover:bg-white/10 smooth-transition group"
+              className="p-5 rounded-2xl bg-[var(--bg-secondary)] border border-[var(--border-dim)] hover:bg-[var(--bg-tertiary)] smooth-transition group"
             >
               <div className="flex items-start justify-between mb-3">
                 <div className="flex-1">
-                  <h3 className="text-lg font-bold text-white group-hover:text-neon-cyan smooth-transition flex items-center space-x-2">
+                  <h3 className="text-lg font-bold text-[var(--text-primary)] group-hover:text-[var(--accent)] smooth-transition flex items-center space-x-2">
                     <span>{repo.name}</span>
                     <ExternalLink className="w-4 h-4 opacity-0 group-hover:opacity-100 smooth-transition" />
                   </h3>
-                  <p className="text-white/60 text-sm mt-1 line-clamp-2">
+                  <p className="text-[var(--text-secondary)] text-sm mt-1 line-clamp-2">
                     {repo.description || 'No description available'}
                   </p>
                 </div>

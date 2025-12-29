@@ -13,39 +13,10 @@ const Wallpaper = ({ wallpaperId, customWallpaper }) => {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.8 }}
-          className="absolute inset-0 -z-10"
-          style={{
-            backgroundImage: `url(${customWallpaper})`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            backgroundRepeat: 'no-repeat',
-          }}
+          className="absolute inset-0 -z-10 bg-cover bg-center bg-no-repeat"
+          style={{ backgroundImage: `url(${customWallpaper})` }}
         >
-          {/* Animated Particles */}
-          <div className="absolute inset-0 overflow-hidden">
-            {[...Array(20)].map((_, i) => (
-              <motion.div
-                key={`custom-particle-${i}`}
-                className="absolute w-2 h-2 bg-white/20 rounded-full"
-                initial={{
-                  x: Math.random() * window.innerWidth,
-                  y: Math.random() * window.innerHeight,
-                }}
-                animate={{
-                  x: Math.random() * window.innerWidth,
-                  y: Math.random() * window.innerHeight,
-                }}
-                transition={{
-                  duration: Math.random() * 20 + 10,
-                  repeat: Infinity,
-                  repeatType: "reverse",
-                }}
-              />
-            ))}
-          </div>
-
-          {/* Gradient Overlay */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
+          <div className="absolute inset-0 bg-black/20" />
         </motion.div>
       </AnimatePresence>
     )
@@ -62,36 +33,57 @@ const Wallpaper = ({ wallpaperId, customWallpaper }) => {
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         transition={{ duration: 0.8 }}
-        className="absolute inset-0 -z-10"
-        style={{
-          background: wallpaper.value,
-        }}
+        className="absolute inset-0 -z-10 overflow-hidden bg-[var(--bg-primary)]"
       >
-        {/* Animated Particles */}
+        {/* Retro Grid */}
+        <div
+          className="absolute inset-0 opacity-20"
+          style={{
+            backgroundImage: `linear-gradient(var(--text-dim) 1px, transparent 1px),
+              linear-gradient(90deg, var(--text-dim) 1px, transparent 1px)`,
+            backgroundSize: '40px 40px',
+            backgroundPosition: 'center center',
+            transform: 'perspective(500px) rotateX(20deg) scale(1.5)',
+            transformOrigin: '50% 100%'
+          }}
+        />
+
+        {/* Horizon Glow */}
+        <div className="absolute top-1/2 left-0 right-0 h-full bg-gradient-to-t from-[var(--bg-primary)] via-transparent to-transparent" />
+
+        {/* Dynamic Wallpaper Overlay Color */}
+        <div
+          className="absolute inset-0 opacity-40 mix-blend-overlay"
+          style={{ background: wallpaper.value }}
+        />
+
+        {/* Noise Texture for Texture */}
+        <div className="absolute inset-0 opacity-[0.03] pointer-events-none"
+          style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")` }}
+        />
+
+        {/* Floating Particles (Digital Dust) */}
         <div className="absolute inset-0 overflow-hidden">
           {[...Array(20)].map((_, i) => (
             <motion.div
-              key={`${wallpaperId}-particle-${i}`}
-              className="absolute w-2 h-2 bg-white/20 rounded-full"
+              key={`particle-${i}`}
+              className="absolute w-0.5 h-0.5 bg-[var(--accent)] opacity-50"
               initial={{
                 x: Math.random() * window.innerWidth,
                 y: Math.random() * window.innerHeight,
               }}
               animate={{
-                x: Math.random() * window.innerWidth,
-                y: Math.random() * window.innerHeight,
+                y: [null, Math.random() * -100],
+                opacity: [0, 0.6, 0],
               }}
               transition={{
-                duration: Math.random() * 20 + 10,
+                duration: Math.random() * 5 + 5,
                 repeat: Infinity,
-                repeatType: "reverse",
+                ease: "linear",
               }}
             />
           ))}
         </div>
-
-        {/* Gradient Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
       </motion.div>
     </AnimatePresence>
   )

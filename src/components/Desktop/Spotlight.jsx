@@ -40,7 +40,7 @@ const Spotlight = ({ onClose, onAppOpen }) => {
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       onClick={onClose}
-      className="fixed inset-0 bg-black/60 backdrop-blur-md z-[100] flex items-start justify-center pt-32"
+      className="fixed inset-0 bg-[var(--bg-primary)]/70 backdrop-blur-md z-[100] flex items-start justify-center pt-32"
     >
       <motion.div
         initial={{ scale: 0.9, y: -50 }}
@@ -48,20 +48,20 @@ const Spotlight = ({ onClose, onAppOpen }) => {
         exit={{ scale: 0.9, y: -50 }}
         transition={{ type: "spring", stiffness: 300, damping: 25 }}
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-2xl glass-strong rounded-3xl p-6 deep-shadow"
+        className="w-full max-w-2xl bg-[var(--bg-secondary)] border border-[var(--border-secondary)] rounded-3xl p-6 deep-shadow"
       >
         {/* Search Input */}
         <div className="relative">
-          <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-white/50 w-6 h-6" />
+          <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-[var(--text-dim)] w-6 h-6" />
           <input
             ref={inputRef}
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search applications..."
-            className="w-full pl-14 pr-6 py-4 bg-white/5 border border-white/10 rounded-2xl 
-              text-white text-lg placeholder-white/40 focus:outline-none focus:ring-2 
-              focus:ring-neon-pink focus:border-transparent smooth-transition"
+            className="w-full pl-14 pr-6 py-4 bg-[var(--bg-tertiary)] border border-[var(--border-dim)] rounded-2xl 
+              text-[var(--text-primary)] text-lg placeholder-[var(--text-dim)] focus:outline-none focus:ring-2 
+              focus:ring-[var(--accent)] focus:border-transparent smooth-transition"
           />
         </div>
 
@@ -81,8 +81,8 @@ const Spotlight = ({ onClose, onAppOpen }) => {
                 }}
                 className={`flex items-center space-x-4 p-4 rounded-xl cursor-pointer smooth-transition
                   ${selectedIndex === index
-                    ? 'bg-white/10 ring-2 ring-neon-pink'
-                    : 'hover:bg-white/5'
+                    ? 'bg-[var(--bg-tertiary)] ring-2 ring-[var(--accent)]'
+                    : 'hover:bg-[var(--bg-tertiary)]/50'
                   }`}
               >
                 <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${app.color} 
@@ -90,10 +90,10 @@ const Spotlight = ({ onClose, onAppOpen }) => {
                   {app.icon}
                 </div>
                 <div className="flex-1">
-                  <div className="text-white font-semibold">{app.title}</div>
-                  <div className="text-white/60 text-sm">Application</div>
+                  <div className="text-[var(--text-primary)] font-semibold">{app.title}</div>
+                  <div className="text-[var(--text-dim)] text-sm">Application</div>
                 </div>
-                <kbd className="px-3 py-1 bg-white/10 rounded text-white/60 text-sm">
+                <kbd className="px-3 py-1 bg-[var(--bg-tertiary)] rounded text-[var(--text-dim)] text-sm">
                   {selectedIndex === index && '↵'}
                 </kbd>
               </motion.div>
@@ -101,7 +101,7 @@ const Spotlight = ({ onClose, onAppOpen }) => {
           </AnimatePresence>
 
           {apps.length === 0 && query && (
-            <div className="text-center py-12 text-white/40">
+            <div className="text-center py-12 text-[var(--text-dim)]">
               No applications found for "{query}"
             </div>
           )}

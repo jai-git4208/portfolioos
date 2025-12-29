@@ -76,7 +76,7 @@ const SkillsApp = () => {
         className="text-center mb-8"
       >
         <h1 className="text-4xl font-bold gradient-text mb-2">Technical Skills</h1>
-        <p className="text-white/60">Full-stack developer with expertise in modern web technologies</p>
+        <p className="text-[var(--text-secondary)]">Full-stack developer with expertise in modern web technologies</p>
       </motion.div>
 
       {/* Skill Categories */}
@@ -87,14 +87,14 @@ const SkillsApp = () => {
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: catIndex * 0.1 }}
-            className="rounded-3xl glass p-6 hover:scale-[1.02] smooth-transition"
+            className="rounded-3xl bg-[var(--bg-secondary)]/50 border border-[var(--border-dim)] p-6 hover:scale-[1.02] smooth-transition"
           >
             {/* Category Header */}
             <div className="flex items-center space-x-3 mb-6">
               <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${category.color} flex items-center justify-center text-white`}>
                 {category.icon}
               </div>
-              <h2 className="text-2xl font-bold text-white">{category.title}</h2>
+              <h2 className="text-2xl font-bold text-[var(--text-primary)]">{category.title}</h2>
             </div>
 
             {/* Skills */}
@@ -108,16 +108,16 @@ const SkillsApp = () => {
                   className="group"
                 >
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-white/90 font-medium">{skill.name}</span>
-                    <span className="text-white/60 text-sm">{skill.level}%</span>
+                    <span className="text-[var(--text-primary)] font-medium">{skill.name}</span>
+                    <span className="text-[var(--text-dim)] text-sm">{skill.level}%</span>
                   </div>
-                  
+
                   {/* Progress Bar */}
-                  <div className="relative h-2 bg-white/10 rounded-full overflow-hidden">
+                  <div className="relative h-2 bg-[var(--border-dim)] rounded-full overflow-hidden">
                     <motion.div
                       initial={{ width: 0 }}
                       animate={{ width: `${skill.level}%` }}
-                      transition={{ 
+                      transition={{
                         delay: catIndex * 0.1 + skillIndex * 0.05 + 0.3,
                         duration: 1,
                         ease: "easeOut"
@@ -146,11 +146,11 @@ const SkillsApp = () => {
         transition={{ delay: 0.6 }}
         className="rounded-3xl glass p-6"
       >
-        <h2 className="text-2xl font-bold text-white mb-6 flex items-center space-x-2">
-          <Cpu className="w-8 h-8 text-neon-orange" />
+        <h2 className="text-2xl font-bold text-[var(--accent)] mb-6 flex items-center space-x-2">
+          <Cpu className="w-8 h-8 text-[var(--accent)]" />
           <span>Tools & Technologies</span>
         </h2>
-        
+
         <div className="flex flex-wrap gap-4">
           {tools.map((tool, index) => (
             <motion.div
@@ -159,10 +159,10 @@ const SkillsApp = () => {
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.7 + index * 0.05 }}
               whileHover={{ scale: 1.1, y: -5 }}
-              className="px-6 py-4 rounded-2xl glass-strong hover:bg-white/10 smooth-transition flex items-center space-x-3 cursor-pointer"
+              className="px-6 py-4 rounded-2xl bg-[var(--bg-secondary)] border border-[var(--border-dim)] hover:bg-[var(--bg-tertiary)] smooth-transition flex items-center space-x-3 cursor-pointer"
             >
               <span className="text-3xl">{tool.emoji}</span>
-              <span className="text-white font-medium">{tool.name}</span>
+              <span className="text-[var(--text-primary)] font-medium">{tool.name}</span>
             </motion.div>
           ))}
         </div>

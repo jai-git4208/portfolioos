@@ -2,7 +2,10 @@ import React, { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Cpu, HardDrive, Activity } from 'lucide-react'
 
-const SystemStatsWidget = () => {
+import { useDraggable } from '../../hooks/useDraggable'
+
+const SystemStatsWidget = ({ position: propPosition, onPositionChange }) => {
+  const { position, handleMouseDown } = useDraggable(propPosition, onPositionChange)
   const [stats, setStats] = useState({
     cpu: 45,
     ram: 62,
@@ -25,16 +28,16 @@ const SystemStatsWidget = () => {
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-2">
           {icon}
-          <span className="text-white/80 text-sm">{label}</span>
+          <span className="text-[var(--text-secondary)] text-xs font-mono uppercase tracking-widest">{label}</span>
         </div>
-        <span className="text-white font-semibold">{value}%</span>
+        <span className="text-[var(--text-primary)] font-mono text-xs">{value}%</span>
       </div>
-      <div className="h-2 bg-white/10 rounded-full overflow-hidden">
+      <div className="h-1 bg-[var(--border-dim)] overflow-hidden">
         <motion.div
           initial={{ width: 0 }}
           animate={{ width: `${value}%` }}
           transition={{ duration: 0.5 }}
-          className={`h-full bg-gradient-to-r ${color} rounded-full`}
+          className="h-full bg-[var(--accent)]"
         />
       </div>
     </div>
@@ -42,34 +45,36 @@ const SystemStatsWidget = () => {
 
   return (
     <motion.div
-      initial={{ opacity: 0, scale: 0.8 }}
+      initial={{ opacity: 0, scale: 0.9 }}
       animate={{ opacity: 1, scale: 1 }}
-      whileHover={{ scale: 1.05, y: -5 }}
-      className="w-72 p-6 rounded-3xl glass-strong deep-shadow bg-gradient-to-br from-teal-500/20 to-cyan-500/20"
+      onMouseDown={handleMouseDown}
+      onTouchStart={handleMouseDown}
+      style={{
+        left: position.x - propPosition.x,
+        top: position.y - propPosition.y,
+        position: 'relative'
+      }}
+      className="w-72 p-4 border border-[var(--border-secondary)] bg-[var(--bg-secondary)]/90 font-mono select-none cursor-move active:cursor-grabbing"
     >
-      <h3 className="text-white font-bold text-lg mb-4 flex items-center space-x-2">
-        <Activity className="w-5 h-5 text-neon-cyan" />
-        <span>System Stats</span>
-      </h3>
+      <div className="text-xs text-[var(--text-dim)] mb-3 uppercase tracking-widest border-b border-[var(--border-dim)] pb-2">
+        [SYS_MONITOR]
+      </div>
 
       <div className="space-y-4">
         <StatBar
-          label="CPU"
+          label="CPU_LOAD"
           value={stats.cpu}
-          icon={<Cpu className="w-4 h-4 text-neon-pink" />}
-          color="from-pink-500 to-orange-500"
+          icon={<Cpu className="w-4 h-4 text-[var(--accent)]" />}
         />
         <StatBar
-          label="RAM"
+          label="MEM_USAGE"
           value={stats.ram}
-          icon={<Activity className="w-4 h-4 text-neon-purple" />}
-          color="from-purple-500 to-blue-500"
+          icon={<Activity className="w-4 h-4 text-[var(--accent)]" />}
         />
         <StatBar
-          label="Storage"
+          label="DSK_SPACE"
           value={stats.storage}
-          icon={<HardDrive className="w-4 h-4 text-neon-cyan" />}
-          color="from-teal-500 to-cyan-500"
+          icon={<HardDrive className="w-4 h-4 text-[var(--accent)]" />}
         />
       </div>
     </motion.div>

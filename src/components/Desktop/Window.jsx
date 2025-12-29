@@ -9,7 +9,7 @@ import ContactApp from '../Apps/ContactApp'
 import TerminalApp from '../Apps/TerminalApp'
 import BrowserApp from '../Apps/BrowserApp'
 import SettingsApp from '../Apps/SettingsApp'
-import { APPS } from '../../utils/constants'
+import { APPS, APP_CONFIG } from '../../utils/constants'
 
 const Window = ({
   window,
@@ -44,7 +44,11 @@ const Window = ({
       case APPS.SETTINGS:
         return <SettingsApp settings={desktopSettings} />
       default:
-        return null
+        return (
+          <div className="flex items-center justify-center h-full text-red-500 font-mono">
+            [ERROR] APPLICATION_NOT_FOUND: {window.id}
+          </div>
+        )
     }
   }
 
@@ -54,89 +58,61 @@ const Window = ({
 
   return (
     <motion.div
-      initial={{ scale: 0, opacity: 0 }}
+      initial={{ scale: 0.95, opacity: 0 }}
       animate={{ scale: 1, opacity: 1 }}
-      exit={{ scale: 0, opacity: 0 }}
-      transition={{ type: "spring", stiffness: 300, damping: 25 }}
+      exit={{ scale: 0.95, opacity: 0 }}
+      transition={{ duration: 0.1 }} // Instant snap
       style={{
         ...windowStyle,
         zIndex: window.zIndex,
         position: 'fixed',
       }}
       onClick={onFocus}
-      className={`rounded-2xl glass-strong deep-shadow overflow-hidden flex flex-col
-        ${isActive ? 'ring-2 ring-white/30' : ''} smooth-transition`}
+      className={`terminal-box flex flex-col shadow-2xl
+        ${isActive ? 'border-[var(--accent)] shadow-[0_0_15px_rgba(51,255,0,0.15)]' : 'border-[var(--border-secondary)] opacity-90'} 
+        transition-colors duration-100 ease-linear`}
     >
       {/* Title Bar */}
       <div
-        className={`h-12 bg-gradient-to-r ${window.color} px-4 flex items-center justify-between cursor-move relative`}
+        className={`h-8 px-2 flex items-center justify-between cursor-move shrink-0 border-b border-[var(--border-dim)] ${isActive ? 'bg-[var(--accent)] text-[var(--bg-tertiary)]' : 'bg-[var(--bg-secondary)] text-[var(--text-dim)]'}`}
         onMouseDown={handleMouseDown}
         onTouchStart={handleMouseDown}
       >
-        {/* Traffic Lights */}
-        <div className="flex items-center space-x-2 no-drag">
-          <motion.button
-            whileHover={{ scale: 1.2 }}
-            whileTap={{ scale: 0.9 }}
-            onClick={onClose}
-            className="w-3 h-3 rounded-full bg-red-500 hover:bg-red-600 smooth-transition"
-          />
-          <motion.button
-            whileHover={{ scale: 1.2 }}
-            whileTap={{ scale: 0.9 }}
-            onClick={onMinimize}
-            className="w-3 h-3 rounded-full bg-yellow-500 hover:bg-yellow-600 smooth-transition"
-          />
-          <motion.button
-            whileHover={{ scale: 1.2 }}
-            whileTap={{ scale: 0.9 }}
-            onClick={onMaximize}
-            className="w-3 h-3 rounded-full bg-green-500 hover:bg-green-600 smooth-transition"
-          />
-        </div>
-
         {/* Title */}
-        <div className="absolute left-1/2 transform -translate-x-1/2 flex items-center space-x-2">
-          <span className="text-2xl">{window.icon}</span>
-          <span className="text-white font-semibold">{window.title}</span>
+        <div className="flex items-center space-x-2 font-mono text-sm tracking-tight px-2">
+          <span className="font-bold uppercase">[{APP_CONFIG[window.id]?.tag || window.id}]</span>
+          <span>{window.title}</span>
         </div>
 
-        {/* Window Controls */}
-        <div className="flex items-center space-x-2 no-drag">
-          <motion.button
-            whileHover={{ scale: 1.1, backgroundColor: 'rgba(255,255,255,0.2)' }}
-            whileTap={{ scale: 0.9 }}
+        {/* Text-based Controls */}
+        <div className="flex items-center space-x-1 no-drag font-mono text-sm font-bold">
+          <button
             onClick={onMinimize}
-            className="p-1.5 rounded-lg smooth-transition"
+            className={`px-2 hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] transition-colors ${isActive ? 'hover:text-[var(--accent)]' : ''}`}
           >
-            <Minus className="w-4 h-4 text-white" />
-          </motion.button>
-          <motion.button
-            whileHover={{ scale: 1.1, backgroundColor: 'rgba(255,255,255,0.2)' }}
-            whileTap={{ scale: 0.9 }}
+            [_]
+          </button>
+          <button
             onClick={onMaximize}
-            className="p-1.5 rounded-lg smooth-transition"
+            className={`px-2 hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] transition-colors ${isActive ? 'hover:text-[var(--accent)]' : ''}`}
           >
-            {window.maximized ? (
-              <Minimize2 className="w-4 h-4 text-white" />
-            ) : (
-              <Maximize2 className="w-4 h-4 text-white" />
-            )}
-          </motion.button>
-          <motion.button
-            whileHover={{ scale: 1.1, backgroundColor: 'rgba(255,255,255,0.2)' }}
-            whileTap={{ scale: 0.9 }}
+            [{window.maximized ? '^' : 'O'}]
+          </button>
+          <button
             onClick={onClose}
-            className="p-1.5 rounded-lg smooth-transition"
+            className="px-2 hover:bg-red-600 hover:text-white transition-colors"
           >
-            <X className="w-4 h-4 text-white" />
-          </motion.button>
+            [X]
+          </button>
         </div>
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-auto bg-black/20 backdrop-blur-sm">
-        {renderApp()}
+      <div className="flex-1 overflow-auto bg-[var(--bg-tertiary)] relative p-1">
+        {/* Inner Grid/Scanline optional */}
+        <div className="h-full w-full text-[var(--text-primary)] font-mono text-sm">
+          {renderApp()}
+        </div>
       </div>
     </motion.div>
   )

@@ -19,7 +19,7 @@ const AboutApp = () => {
           >
             JP
           </motion.div>
-          
+
           <div className="flex-1">
             <motion.h1
               initial={{ opacity: 0, x: -20 }}
@@ -37,7 +37,7 @@ const AboutApp = () => {
             >
               {USER_INFO.title}
             </motion.p>
-            
+
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -70,17 +70,19 @@ const AboutApp = () => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.5 }}
-        className="rounded-3xl glass p-6"
+        className="rounded-none border border-[var(--border-secondary)] bg-[var(--bg-secondary)]/50 p-6"
       >
-        <h2 className="text-2xl font-bold text-white mb-4 flex items-center space-x-2">
-          <span className="text-3xl">👨‍💻</span>
-          <span>About Me</span>
+        <h2 className="text-xl font-bold text-[var(--accent)] mb-4 flex items-center space-x-2 border-b border-[var(--border-dim)] pb-2 uppercase tracking-widest">
+          <span className="text-lg">[BIO]</span>
+          <span>About_Me</span>
         </h2>
-        <p className="text-white/80 leading-relaxed text-lg">
+        <p className="text-[var(--text-primary)] leading-relaxed font-mono">
           {USER_INFO.bio}
         </p>
-        <p className="text-white/80 leading-relaxed text-lg mt-4">
-          Aspiring to study engineering at MIT, I'm committed to leveraging global opportunities to develop revolutionary technology solutions. My focus is on building decentralized systems, AI-powered applications, and innovative platforms that solve real-world problems.
+        <p className="text-[var(--text-primary)] leading-relaxed mt-4 font-mono">
+          &gt; Aspiring to study engineering at MIT.
+          <br />&gt; Focused on decentralized systems & AI.
+          <br />&gt; committed to developing revolutionary tech.
         </p>
       </motion.div>
 
@@ -89,13 +91,13 @@ const AboutApp = () => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.6 }}
-        className="rounded-3xl glass p-6"
+        className="rounded-none border border-[var(--border-secondary)] bg-[var(--bg-secondary)]/50 p-6"
       >
-        <h2 className="text-2xl font-bold text-white mb-6 flex items-center space-x-2">
-          <span className="text-3xl">🎓</span>
+        <h2 className="text-xl font-bold text-[var(--accent)] mb-6 flex items-center space-x-2 border-b border-[var(--border-dim)] pb-2 uppercase tracking-widest">
+          <span className="text-lg">[EDU]</span>
           <span>Education</span>
         </h2>
-        
+
         <div className="space-y-4">
           {USER_INFO.education.map((edu, index) => (
             <motion.div
@@ -135,7 +137,7 @@ const AboutApp = () => {
           <Award className="w-8 h-8 text-neon-purple" />
           <span>Certifications</span>
         </h2>
-        
+
         <div className="grid gap-3">
           {USER_INFO.certifications.map((cert, index) => (
             <motion.div
@@ -171,7 +173,7 @@ const AboutApp = () => {
           <Globe className="w-6 h-6 text-neon-cyan" />
           <span className="text-white font-semibold">Visit Website</span>
         </motion.a>
-        
+
         <motion.a
           href={`https://${USER_INFO.github}`}
           target="_blank"

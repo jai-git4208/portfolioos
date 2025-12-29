@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { Search, Wifi, Battery, Volume2 } from 'lucide-react'
+import { Search, Wifi, Battery, Volume2, Sun, Moon } from 'lucide-react'
 import { format } from 'date-fns'
+import { useTheme } from '../../contexts/ThemeContext'
 
 const Topbar = ({ onSpotlightToggle, minimizedWindows, onWindowRestore }) => {
   const [time, setTime] = useState(new Date())
+  const { theme, toggleTheme } = useTheme()
 
   useEffect(() => {
     const interval = setInterval(() => setTime(new Date()), 1000)
@@ -12,74 +14,63 @@ const Topbar = ({ onSpotlightToggle, minimizedWindows, onWindowRestore }) => {
   }, [])
 
   return (
-    <motion.div
-      initial={{ y: -100 }}
-      animate={{ y: 0 }}
-      transition={{ type: "spring", stiffness: 300, damping: 30 }}
-      className="absolute top-0 left-0 right-0 h-12 glass-strong z-50 px-6 flex items-center justify-between"
-    >
-      {/* Left Section */}
-      <div className="flex items-center space-x-6">
-        <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          onClick={onSpotlightToggle}
-          className="flex items-center space-x-2 px-4 py-1.5 rounded-full glass hover:bg-white/10 smooth-transition"
-        >
-          <Search className="w-4 h-4 text-white/80" />
-          <span className="text-sm text-white/80 font-medium">Search</span>
-          <kbd className="px-2 py-0.5 text-xs bg-white/10 rounded">⌘K</kbd>
-        </motion.button>
-
-        {/* Minimized Windows */}
-        {minimizedWindows.length > 0 && (
-          <div className="flex items-center space-x-2">
-            {minimizedWindows.map(window => (
-              <motion.button
-                key={window.id}
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-                onClick={() => onWindowRestore(window.id)}
-                className="text-2xl"
-                title={window.title}
-              >
-                {window.icon}
-              </motion.button>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* Center - Time & Date */}
-      <div className="absolute left-1/2 transform -translate-x-1/2 text-center">
-        <div className="text-sm font-semibold text-white">
-          {format(time, 'h:mm a')}
-        </div>
-        <div className="text-xs text-white/60">
-          {format(time, 'EEE, MMM d')}
-        </div>
-      </div>
-
-      {/* Right Section */}
+    <div className="absolute top-0 left-0 right-0 h-6 bg-[var(--bg-primary)] border-b border-[var(--border-secondary)] z-50 flex items-center justify-between font-mono text-xs px-2 select-none text-[var(--text-primary)]">
+      {/* Left - Workspaces / Tags */}
       <div className="flex items-center space-x-4">
-        <motion.div whileHover={{ scale: 1.1 }} className="text-white/80">
-          <Wifi className="w-5 h-5" />
-        </motion.div>
-        <motion.div whileHover={{ scale: 1.1 }} className="text-white/80">
-          <Volume2 className="w-5 h-5" />
-        </motion.div>
-        <motion.div whileHover={{ scale: 1.1 }} className="text-white/80">
-          <Battery className="w-5 h-5" />
-        </motion.div>
-        <div className="flex items-center space-x-2 px-3 py-1 rounded-full glass">
-          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-neon-pink to-neon-orange flex items-center justify-center text-white font-bold text-sm">
-            JP
-          </div>
+        <div className="flex bg-[var(--bg-secondary)] px-2 font-bold">
+          <span>1:term</span>
+          <span className="text-[var(--text-dim)] mx-2">2:web</span>
+          <span className="text-[var(--text-dim)]">3:code</span>
+        </div>
+
+        <span className="text-[var(--text-dim)]">|</span>
+
+        <button
+          onClick={onSpotlightToggle}
+          className="hover:text-[var(--accent)] hover:underline decoration-[var(--accent)]"
+        >
+          SEARCH_EXEC [CMD+K]
+        </button>
+      </div>
+
+      {/* Center - Window Title (Optional) */}
+      <div className="text-[var(--text-dim)] uppercase tracking-widest hidden md:block">
+        PORTFOLIO_OS KERNEL 5.15.0-generic
+      </div>
+
+      {/* Right - System Modules */}
+      <div className="flex items-center space-x-0">
+        <button
+          onClick={toggleTheme}
+          className="flex items-center px-2 border-l border-[var(--border-secondary)] h-6 hover:bg-[var(--bg-secondary)] transition-colors"
+          title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
+        >
+          <span className="text-[var(--text-dim)] mr-2">THEME:</span>
+          {theme === 'dark' ? (
+            <Moon className="w-3 h-3 text-[var(--accent)]" />
+          ) : (
+            <Sun className="w-3 h-3 text-[var(--accent)]" />
+          )}
+          <span className="ml-1 uppercase font-bold text-[var(--accent)]">[{theme}]</span>
+        </button>
+
+        <Module label="CPU" value="12%" color="text-yellow-500" />
+        <Module label="MEM" value="2.4G" color="text-blue-400" />
+        <Module label="VOL" value="45%" />
+
+        <div className="flex bg-[var(--bg-secondary)] px-2 ml-2">
+          {format(time, 'yyyy-MM-dd HH:mm')}
         </div>
       </div>
-    </motion.div>
+    </div>
   )
 }
 
-export default Topbar
+const Module = ({ label, value, color = "text-[var(--text-secondary)]" }) => (
+  <div className="flex items-center px-2 border-l border-[var(--border-secondary)] h-6">
+    <span className="text-[var(--text-dim)] mr-1">{label}:</span>
+    <span className={color}>{value}</span>
+  </div>
+)
 
+export default Topbar

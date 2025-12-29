@@ -9,6 +9,7 @@ import ContactApp from '../Apps/ContactApp'
 import TerminalApp from '../Apps/TerminalApp'
 import BrowserApp from '../Apps/BrowserApp'
 import SettingsApp from '../Apps/SettingsApp'
+import ExplorerApp from '../Apps/ExplorerApp'
 import { APPS, APP_CONFIG } from '../../utils/constants'
 
 const Window = ({
@@ -43,6 +44,8 @@ const Window = ({
         return <BrowserApp />
       case APPS.SETTINGS:
         return <SettingsApp settings={desktopSettings} />
+      case APPS.EXPLORER:
+        return <ExplorerApp />
       default:
         return (
           <div className="flex items-center justify-center h-full text-red-500 font-mono">

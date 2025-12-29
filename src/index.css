@@ -185,6 +185,6 @@ body {
 
 /* Selection */
 ::selection {
-  background: var(--terminal-accent);
+  background: var(--accent);
   color: #000;
 }

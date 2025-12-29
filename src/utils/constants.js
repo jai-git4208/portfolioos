@@ -6,6 +6,7 @@ export const APPS = {
   TERMINAL: 'terminal',
   BROWSER: 'browser',
   SETTINGS: 'settings',
+  EXPLORER: 'explorer',
 }
 
 export const APP_CONFIG = {
@@ -64,6 +65,14 @@ export const APP_CONFIG = {
     color: 'from-gray-800 to-gray-900',
     initialSize: { width: 700, height: 600 },
     initialPosition: { x: 180, y: 100 },
+  },
+  [APPS.EXPLORER]: {
+    tag: 'DIR',
+    title: 'File Explorer',
+    icon: '[DIR]',
+    color: 'from-gray-800 to-gray-900',
+    initialSize: { width: 900, height: 600 },
+    initialPosition: { x: 150, y: 120 },
   },
 }
 

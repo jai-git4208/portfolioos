@@ -11,6 +11,7 @@ import WeatherWidget from '../Widgets/WeatherWidget'
 import ClockWidget from '../Widgets/ClockWidget'
 import NotesWidget from '../Widgets/NotesWidget'
 import SystemStatsWidget from '../Widgets/SystemStatsWidget'
+import DesktopIcon from './DesktopIcon'
 
 const Desktop = () => {
   const windowManager = useWindowManager()
@@ -166,6 +167,34 @@ const Desktop = () => {
         minimizedWindows={windowManager.windows.filter(w => w.minimized)}
         onWindowRestore={windowManager.restoreWindow}
       />
+
+      {/* Desktop Icons Grid */}
+      <div className="absolute inset-0 z-10 pointer-events-none">
+        <DesktopIcon
+          name="Documents"
+          type="folder"
+          initialPosition={{ x: 40, y: 80 }}
+          onClick={() => handleAppOpen(APPS.EXPLORER)}
+        />
+        <DesktopIcon
+          name="Projects"
+          type="github"
+          initialPosition={{ x: 40, y: 190 }}
+          onClick={() => handleAppOpen(APPS.PROJECTS)}
+        />
+        <DesktopIcon
+          name="Resume"
+          type="file"
+          initialPosition={{ x: 40, y: 300 }}
+          onClick={() => window.open('/JaiminPansal.pdf', '_blank')}
+        />
+        <DesktopIcon
+          name="Terminal"
+          type="terminal"
+          initialPosition={{ x: 40, y: 410 }}
+          onClick={() => handleAppOpen(APPS.TERMINAL)}
+        />
+      </div>
 
       {/* Spotlight Search */}
       {showSpotlight && (

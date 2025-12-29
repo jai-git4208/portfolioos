@@ -6,52 +6,69 @@ import { motion, AnimatePresence } from 'framer-motion'
 function App() {
   const [isMobile, setIsMobile] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
+  const [bootLines, setBootLines] = useState([
+    "   ___  __  ____  ____  ____  __  __   __   __   ____  ",
+    "  / __)/  \\(  _ \\(  __)(  _ \\(  )(  ) (  ) (  ) / ___) ",
+    " (  _ (  O ))   / ) _)  )   / )( / (_/\\)(__ )(__\\___ \\ ",
+    "  \\___/\\__/(__\\_)(__)  (__\\_)(__)\\____/____)(____|____/",
+    "                                                       ",
+    "Initializing PortfolioOS Kernel v1.0.0...",
+    "Loading modules: [ cpu mem disk net ]",
+    "mounting /dev/sda1 on / ... [ OK ]",
+  ])
 
   useEffect(() => {
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768)
     }
-    
+
     checkMobile()
     window.addEventListener('resize', checkMobile)
-    
-    // Simulate loading
-    setTimeout(() => setIsLoading(false), 2000)
-    
+
     return () => window.removeEventListener('resize', checkMobile)
   }, [])
 
+  useEffect(() => {
+    if (isLoading) {
+      const bootSequence = [
+        "detecting hardware...",
+        "logic core: online",
+        "vision systems: online",
+        "audio subsys: online",
+        "mounting user space...",
+        "starting daemons...",
+        "starting sshd... [ OK ]",
+        "starting httpd... [ OK ]",
+        "starting vision_matrix... [ OK ]",
+        "boot sequence complete.",
+        "entering graphical shell..."
+      ]
+
+      let delay = 300
+      bootSequence.forEach((line, index) => {
+        setTimeout(() => {
+          setBootLines(prev => [...prev.slice(-15), line])
+        }, delay)
+        delay += Math.random() * 500 + 100
+      })
+
+      setTimeout(() => setIsLoading(false), delay + 500)
+    }
+  }, [isLoading])
+
   if (isLoading) {
     return (
-      <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900">
-        <motion.div
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          transition={{ type: "spring", stiffness: 260, damping: 20 }}
-          className="text-center"
-        >
-          <motion.div
-            animate={{ rotate: 360 }}
-            transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-            className="w-20 h-20 mx-auto mb-4 border-4 border-t-neon-pink border-r-neon-blue border-b-neon-purple border-l-neon-orange rounded-full"
-          />
-          <motion.h1
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            className="text-3xl font-bold gradient-text"
-          >
-            Portfolio OS
-          </motion.h1>
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.5 }}
-            className="text-white/70 mt-2"
-          >
-            Booting up...
-          </motion.p>
-        </motion.div>
+      <div className="w-full h-full bg-black p-8 font-mono text-[var(--accent)] overflow-hidden flex flex-col justify-end items-start text-sm md:text-base leading-tight">
+        {bootLines.map((line, i) => (
+          <div key={i} className="flex">
+            <span className="text-gray-500 mr-2">[{new Date().toISOString().split('T')[1].slice(0, 8)}]</span>
+            <span className="animate-pulse">{line}</span>
+          </div>
+        ))}
+        <div className="flex animate-pulse">
+          <span className="text-gray-500 mr-2">root@SYSTEM:~#</span>
+          <span className="w-2 h-4 bg-[var(--accent)] inline-block ml-1" />
+        </div>
       </div>
     )
   }

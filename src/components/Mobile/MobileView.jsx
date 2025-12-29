@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion'
 import MobileTopbar from './MobileTopbar'
 import MobileWidgets from './MobileWidgets'
@@ -15,6 +15,9 @@ import { useSwipeGesture } from '../../hooks/useSwipeGesture'
 import AppSwitcher from './AppSwitcher'
 import AppContextMenu from './AppContextMenu'
 import MobileAppIcon from './MobileAppIcon'
+import MobileDock from './MobileDock'
+import MobileAppSidebar from './MobileAppSidebar'
+import Wallpaper from '../Desktop/Wallpaper'
 import { Ripple } from '../Ripple'
 import { useTheme } from '../../contexts/ThemeContext'
 import {
@@ -51,6 +54,7 @@ const MobileView = () => {
   const [activeApp, setActiveApp] = useState(null)
   const [showNotification, setShowNotification] = useState(false)
   const [showAppSwitcher, setShowAppSwitcher] = useState(false)
+  const [showSidebar, setShowSidebar] = useState(false)
   const [openApps, setOpenApps] = useState([])
   const { theme } = useTheme()
 
@@ -68,6 +72,43 @@ const MobileView = () => {
   })
 
   const [contextMenu, setContextMenu] = useState({ isOpen: false, app: null, position: { x: 0, y: 0 } })
+  const [isFullscreen, setIsFullscreen] = useState(false)
+
+  const toggleFullscreen = () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().catch((err) => {
+        console.error(`Error attempting to enable full-screen mode: ${err.message}`)
+      })
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen().catch(() => { })
+      }
+    }
+  }
+
+  // Aggressive auto-fullscreen and state sync
+  useEffect(() => {
+    const handleInteraction = (e) => {
+      // scroll is not a valid user gesture for fullscreen, and can be triggered on load by Framer Motion
+      if (!document.fullscreenElement) {
+        toggleFullscreen()
+      }
+    }
+
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement)
+    }
+
+    window.addEventListener('click', handleInteraction)
+    window.addEventListener('touchstart', handleInteraction)
+    document.addEventListener('fullscreenchange', handleFullscreenChange)
+
+    return () => {
+      window.removeEventListener('click', handleInteraction)
+      window.removeEventListener('touchstart', handleInteraction)
+      document.removeEventListener('fullscreenchange', handleFullscreenChange)
+    }
+  }, [])
 
   const scrollRef = useRef(null)
   const { scrollY } = useScroll()
@@ -105,9 +146,8 @@ const MobileView = () => {
   const handleSwipe = ({ direction, fromEdge }) => {
     if (fromEdge === 'bottom' && direction === 'up') {
       setShowAppSwitcher(true)
-    } else if (fromEdge === 'right' && direction === 'left') {
-      // Could add quick actions menu here in the future
-      console.log('Right edge swipe detected')
+    } else if (fromEdge === 'left' && direction === 'right') {
+      setShowSidebar(true)
     }
   }
 
@@ -205,14 +245,8 @@ const MobileView = () => {
           filter: `brightness(${brightness}%)`,
         }}
       >
-        {/* Terminal Grid Background */}
-        <div className="absolute inset-0" style={{
-          backgroundImage: `
-            linear-gradient(var(--border-dim) 1px, transparent 1px),
-            linear-gradient(90deg, var(--border-dim) 1px, transparent 1px)
-          `,
-          backgroundSize: '20px 20px',
-        }} />
+        {/* Animated Wallpaper */}
+        <Wallpaper wallpaperId={wallpaper} customWallpaper={customWallpaper} />
 
         {/* Scanline Effect */}
         <div className="absolute inset-0 pointer-events-none" style={{
@@ -229,7 +263,7 @@ const MobileView = () => {
             <motion.div
               key="home"
               ref={scrollRef}
-              className="relative h-full overflow-y-auto snap-y snap-proximity scroll-smooth"
+              className="relative h-full overflow-y-auto snap-y snap-proximity scroll-smooth pb-32"
               style={{
                 WebkitOverflowScrolling: 'touch',
               }}
@@ -238,20 +272,32 @@ const MobileView = () => {
               exit={{ opacity: 0 }}
             >
               {/* Top Bar */}
-              <MobileTopbar />
+              <MobileTopbar onMenuClick={() => setShowSidebar(true)} />
 
-              {/* Hero Section - Terminal Style */}
+              {/* Sidebar */}
+              <MobileAppSidebar
+                isOpen={showSidebar}
+                onClose={() => setShowSidebar(false)}
+                isFullscreen={isFullscreen}
+                onToggleFullscreen={toggleFullscreen}
+                settings={{
+                  brightness,
+                  volume,
+                  updateBrightness,
+                  updateVolume
+                }}
+              />
+
+              {/* Hero Section - Streamlined */}
               <motion.div
                 initial={{ opacity: 0, y: 50 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="px-6 py-8 text-left border-b border-[var(--border-dim)] pt-16 snap-start"
+                className="px-6 py-12 text-left border-b border-[var(--border-dim)] pt-20 snap-start"
               >
-                <div className="font-mono text-[var(--accent)] space-y-2">
-                  <div className="text-xs text-[var(--text-dim)] mb-4">[SYSTEM_INIT]</div>
-                  <div className="text-2xl font-bold tracking-tight text-[var(--text-primary)]">&gt; {USER_INFO.name}</div>
-                  <div className="text-sm text-[var(--text-secondary)]">&gt; {USER_INFO.title}</div>
-                  <div className="text-xs text-[var(--text-dim)] mt-3">[LOC] {USER_INFO.location}</div>
-                  <div className="text-xs text-[var(--text-dim)]">[MAIL] {USER_INFO.email}</div>
+                <div className="font-mono text-[var(--accent)] space-y-1">
+                  <div className="text-xs text-[var(--text-dim)] uppercase tracking-tight">[ Welcome_Root ]</div>
+                  <div className="text-2xl font-bold tracking-tighter text-[var(--text-primary)]">System Ready.</div>
+                  <div className="text-[10px] text-[var(--text-dim)] mt-2 uppercase">Core_Status: Operational</div>
                 </div>
               </motion.div>
 
@@ -347,11 +393,13 @@ const MobileView = () => {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 1 }}
-                className="px-6 py-12 text-center font-mono text-[var(--text-dim)] snap-end"
+                className="px-6 py-8 text-center font-mono text-[var(--text-dim)] snap-end"
               >
-                <p className="text-xs">[SYS] {USER_INFO.name}</p>
-                <p className="text-xs mt-2">[VER] PortfolioOS v2.0</p>
+                <p className="text-[8px] uppercase tracking-widest">[ PortfolioOS_Mobile v2.0 ]</p>
               </motion.div>
+
+              {/* Persistent Dock */}
+              <MobileDock onAppOpen={handleAppOpen} activeApp={activeApp} />
             </motion.div>
           ) : (
             <motion.div

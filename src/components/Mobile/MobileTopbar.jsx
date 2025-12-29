@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { Wifi, Battery, Signal } from 'lucide-react'
+import { Wifi, Battery, Signal, Menu } from 'lucide-react'
 import { format } from 'date-fns'
 
-const MobileTopbar = () => {
+const MobileTopbar = ({ onMenuClick }) => {
   const [time, setTime] = useState(new Date())
 
   useEffect(() => {
@@ -13,7 +13,12 @@ const MobileTopbar = () => {
 
   return (
     <div className="fixed top-0 left-0 right-0 z-40 px-6 py-3 flex items-center justify-between text-[var(--accent)] font-mono text-xs border-b border-[var(--border-dim)] bg-[var(--bg-primary)]/80 backdrop-blur-sm">
-      <div className="font-bold tracking-wider">{format(time, 'HH:mm:ss')}</div>
+      <div className="flex items-center space-x-4">
+        <button onClick={onMenuClick} className="hover:bg-[var(--bg-secondary)] p-1 rounded transition-colors">
+          <Menu className="w-4 h-4" />
+        </button>
+        <div className="font-bold tracking-wider">{format(time, 'HH:mm:ss')}</div>
+      </div>
 
       <div className="flex items-center space-x-2">
         <Signal className="w-3 h-3" />

@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Cloud, Activity } from "lucide-react";
+import { fetchWithTimeout } from "../../utils/api";
 
 const MobileWidgets = () => {
   const [weather, setWeather] = useState({
     temp: "--",
-    desc: "Loading...",
+    desc: "LOADING...",
   });
 
   const [commits, setCommits] = useState("--");
@@ -15,22 +16,24 @@ const MobileWidgets = () => {
   // -----------------------------
   const fetchWeather = async () => {
     try {
-      const apiKey = "25b5d77c66848b45c3994cbc52df78c4"; // << REPLACE THIS
+      const apiKey = "25b5d77c66848b45c3994cbc52df78c4";
       const city = "Ahmedabad";
 
-      const res = await fetch(
-        `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric`
+      const res = await fetchWithTimeout(
+        `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric`,
+        { timeout: 5000 }
       );
 
+      if (!res.ok) throw new Error("Weather API Error");
       const data = await res.json();
 
       setWeather({
         temp: Math.round(data.main.temp) + "°C",
-        desc: data.weather[0].main,
+        desc: data.weather[0].main.toUpperCase(),
       });
     } catch (err) {
-      console.log("Weather fetch error:", err);
-      setWeather({ temp: "--", desc: "Error" });
+      console.warn("Weather fetch failed (likely network/blocked):", err.message);
+      setWeather({ temp: "N/A", desc: "OFFLINE" });
     }
   };
 
@@ -39,26 +42,43 @@ const MobileWidgets = () => {
   // ---------------------------------------
   const fetchCommits = async () => {
     try {
-      const username = "jai-git4209";
+      const username = "jai-git4208";
 
-      const res = await fetch(
-        `https://api.github.com/users/${username}/events/public`
+      const res = await fetchWithTimeout(
+        `https://api.github.com/users/${username}/events/public`,
+        {
+          timeout: 5000,
+          headers: {
+            'Accept': 'application/vnd.github.v3+json'
+          }
+        }
       );
 
+      if (res.status === 403) {
+        setCommits("LMTD");
+        return;
+      }
+
+      if (!res.ok) throw new Error("GitHub API Error");
+
       const events = await res.json();
+
+      if (!Array.isArray(events)) {
+        throw new Error("Invalid response format");
+      }
 
       // Count push events (each contains commits)
       let commitCount = 0;
       events.forEach((event) => {
-        if (event.type === "PushEvent") {
+        if (event.type === "PushEvent" && event.payload && Array.isArray(event.payload.commits)) {
           commitCount += event.payload.commits.length;
         }
       });
 
-      setCommits(commitCount);
+      setCommits(commitCount > 0 ? commitCount : "0");
     } catch (err) {
-      console.log("GitHub fetch error:", err);
-      setCommits("--");
+      console.warn("GitHub fetch failed (likely 504/CORS):", err.message);
+      setCommits("ERR");
     }
   };
 
@@ -96,31 +116,30 @@ const MobileWidgets = () => {
   ];
 
   return (
-    <div className="px-6 py-4">
+    <div className="px-6 py-4 border-b border-[var(--border-dim)]">
       <motion.h2
         initial={{ opacity: 0, x: -20 }}
         animate={{ opacity: 1, x: 0 }}
-        className="text-2xl font-bold text-white mb-4"
+        className="text-sm font-mono font-bold text-[var(--accent)] mb-4 uppercase tracking-widest"
       >
-        Widgets
+        [STATS]
       </motion.h2>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 gap-3">
         {widgets.map((widget, index) => (
           <motion.div
             key={index}
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: index * 0.1 }}
-            whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            className={`p-5 rounded-3xl bg-gradient-to-br ${widget.color} glass-strong`}
+            className="p-4 border border-[var(--border-dim)] bg-[var(--bg-secondary)] hover:border-[var(--accent)] transition-colors"
           >
-            <div className="mb-3">{widget.icon}</div>
-            <div className="text-3xl font-bold text-white mb-1">
+            <div className="mb-2 text-[var(--text-dim)]">{widget.icon}</div>
+            <div className="text-2xl font-bold text-[var(--text-primary)] font-mono mb-1">
               {widget.value}
             </div>
-            <div className="text-white/80 text-sm">{widget.subtitle}</div>
+            <div className="text-[var(--text-dim)] text-xs font-mono uppercase tracking-wider">{widget.subtitle}</div>
           </motion.div>
         ))}
       </div>

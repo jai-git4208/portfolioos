@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { GITHUB_API } from '../utils/constants'
+import { fetchWithTimeout } from '../utils/api'
 
 export const useGitHub = () => {
   const [repos, setRepos] = useState([])
@@ -9,12 +10,24 @@ export const useGitHub = () => {
   useEffect(() => {
     const fetchRepos = async () => {
       try {
-        const response = await fetch(GITHUB_API + '?sort=updated&per_page=10')
-        if (!response.ok) throw new Error('Failed to fetch repositories')
+        const response = await fetchWithTimeout(GITHUB_API + '?sort=updated&per_page=10', {
+          timeout: 8000,
+          headers: {
+            'Accept': 'application/vnd.github.v3+json'
+          }
+        })
+
+        if (response.status === 403) {
+          throw new Error('GitHub API rate limit exceeded. Please try again later.')
+        }
+
+        if (!response.ok) throw new Error('Failed to fetch repositories (Server Error)')
+
         const data = await response.json()
-        setRepos(data)
+        setRepos(Array.isArray(data) ? data : [])
       } catch (err) {
-        setError(err.message)
+        console.warn('GitHub Repo fetch failed:', err.message)
+        setError(err.message === 'The user aborted a request.' ? 'Request timed out' : err.message)
       } finally {
         setLoading(false)
       }
@@ -25,3 +38,4 @@ export const useGitHub = () => {
 
   return { repos, loading, error }
 }
+

@@ -12,9 +12,12 @@ import ClockWidget from '../Widgets/ClockWidget'
 import NotesWidget from '../Widgets/NotesWidget'
 import SystemStatsWidget from '../Widgets/SystemStatsWidget'
 import DesktopIcon from './DesktopIcon'
+import { useContextMenu } from '../../contexts/ContextMenuContext'
+import { Monitor, RefreshCcw, Terminal as TerminalIcon, LayoutGrid, Settings as SettingsIcon } from 'lucide-react'
 
 const Desktop = () => {
   const windowManager = useWindowManager()
+  const { showMenu } = useContextMenu()
   const [showSpotlight, setShowSpotlight] = useState(false)
 
   // Load settings from localStorage
@@ -129,10 +132,23 @@ const Desktop = () => {
     localStorage.setItem('desktop_widget_settings', JSON.stringify(settings))
   }
 
+  const handleDesktopContextMenu = (e) => {
+    showMenu(e, [
+      { label: 'Refresh', icon: RefreshCcw, action: () => window.location.reload() },
+      { separator: true },
+      { label: 'New Terminal', icon: TerminalIcon, action: () => handleAppOpen(APPS.TERMINAL) },
+      { label: 'Settings', icon: SettingsIcon, action: () => handleAppOpen(APPS.SETTINGS) },
+      { separator: true },
+      { label: 'Change Wallpaper', icon: Monitor, action: () => handleAppOpen(APPS.SETTINGS) },
+      { label: 'Show Widgets', icon: LayoutGrid, action: () => updateWidgetSettings({ ...widgetSettings, clock: true, weather: true }) },
+    ])
+  }
+
   return (
     <div
       className="relative w-full h-full overflow-hidden"
       style={{ filter: `brightness(${brightness}%)` }}
+      onContextMenu={handleDesktopContextMenu}
     >
       {/* Animated Wallpaper */}
       <Wallpaper wallpaperId={wallpaper} customWallpaper={customWallpaper} />

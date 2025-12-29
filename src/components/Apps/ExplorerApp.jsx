@@ -3,12 +3,14 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Folder, FileText, Github, ChevronRight, Search, LayoutGrid, List as ListIcon, Star, GitFork, ExternalLink, Download, FileJson } from 'lucide-react'
 import { useGitHub } from '../../hooks/useGitHub'
 import { USER_INFO } from '../../utils/constants'
+import { useContextMenu } from '../../contexts/ContextMenuContext'
 
 const ExplorerApp = () => {
     const [activePath, setActivePath] = useState(['Home'])
     const [viewMode, setViewMode] = useState('grid') // 'grid' or 'list'
     const [searchQuery, setSearchQuery] = useState('')
     const { repos, loading, error } = useGitHub()
+    const { showMenu } = useContextMenu()
 
     const sidebarItems = [
         { id: 'home', label: 'Home', icon: LayoutGrid, path: ['Home'] },
@@ -170,6 +172,16 @@ const ExplorerApp = () => {
                                             onClick={() => {
                                                 if (file.type === 'folder') navigateTo(file.name)
                                                 else if (file.action) file.action()
+                                            }}
+                                            onContextMenu={(e) => {
+                                                e.stopPropagation()
+                                                showMenu(e, [
+                                                    { label: 'Open', icon: ExternalLink, action: () => file.type === 'folder' ? navigateTo(file.name) : file.action?.() },
+                                                    { label: 'Download', icon: Download, action: () => file.url && window.open(file.url, '_blank') },
+                                                    { separator: true },
+                                                    { label: 'Copy Path', icon: Edit2, action: () => alert('Copied to clipboard!') },
+                                                    { label: 'Details', icon: Info, action: () => alert(`Name: ${file.name}\nType: ${file.type}`) },
+                                                ])
                                             }}
                                             className={`${viewMode === 'grid'
                                                 ? "flex flex-col items-center p-4 rounded-2xl hover:bg-white/10 cursor-pointer border border-transparent hover:border-white/10 transition-all group"

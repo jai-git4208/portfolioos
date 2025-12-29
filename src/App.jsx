@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react'
 import Desktop from './components/Desktop/Desktop'
 import MobileView from './components/Mobile/MobileView'
 import { motion, AnimatePresence } from 'framer-motion'
+import { ContextMenuProvider } from './contexts/ContextMenuContext'
+import ContextMenu from './components/Desktop/ContextMenu'
 
 function App() {
   const [isMobile, setIsMobile] = useState(false)
@@ -74,13 +76,18 @@ function App() {
   }
 
   return (
-    <AnimatePresence mode="wait">
-      {isMobile ? (
-        <MobileView key="mobile" />
-      ) : (
-        <Desktop key="desktop" />
-      )}
-    </AnimatePresence>
+    <ContextMenuProvider>
+      <AnimatePresence mode="wait">
+        {isMobile ? (
+          <MobileView key="mobile" />
+        ) : (
+          <>
+            <Desktop key="desktop" />
+            <ContextMenu />
+          </>
+        )}
+      </AnimatePresence>
+    </ContextMenuProvider>
   )
 }
 

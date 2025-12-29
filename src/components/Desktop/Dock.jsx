@@ -1,7 +1,10 @@
 import React from 'react'
 import { APPS, APP_CONFIG } from '../../utils/constants'
+import { useContextMenu } from '../../contexts/ContextMenuContext'
+import { ExternalLink, Minimize2, X, Info } from 'lucide-react'
 
 const Dock = ({ onAppOpen, openWindows, onWindowRestore, hiddenApps = [] }) => {
+  const { showMenu } = useContextMenu()
   // Filter out hidden apps
   const visibleApps = Object.values(APPS).filter(app => !hiddenApps.includes(app))
 
@@ -22,6 +25,21 @@ const Dock = ({ onAppOpen, openWindows, onWindowRestore, hiddenApps = [] }) => {
                 } else {
                   onAppOpen(app)
                 }
+              }}
+              onContextMenu={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+                const window = openWindows.find(w => w.id === app)
+                showMenu(e, [
+                  { label: `Open ${APP_CONFIG[app].title}`, icon: ExternalLink, action: () => onAppOpen(app) },
+                  { separator: true },
+                  { label: 'Pin to Dock', icon: Info, action: () => alert('Already pinned!') },
+                  { label: 'App Details', icon: Info, action: () => alert(`App: ${APP_CONFIG[app].title}\nTag: ${APP_CONFIG[app].tag}`) },
+                  ...(window ? [
+                    { separator: true },
+                    { label: 'Quit', icon: X, danger: true, action: () => alert('Close via window controls for now') }
+                  ] : [])
+                ])
               }}
               className={`
                 px-4 py-2 font-mono text-sm uppercase tracking-wider transition-all duration-200 border-b-2

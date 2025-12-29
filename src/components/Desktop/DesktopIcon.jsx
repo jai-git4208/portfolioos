@@ -1,6 +1,7 @@
 import React from 'react'
 import { motion } from 'framer-motion'
-import { Folder, FileText, Github, Terminal, Settings, Info, MessageSquare } from 'lucide-react'
+import { Folder, FileText, Github, Terminal, Settings, Info, MessageSquare, ExternalLink, Trash2, Edit2 } from 'lucide-react'
+import { useContextMenu } from '../../contexts/ContextMenuContext'
 
 const DesktopIcon = ({ name, icon, type, onClick, initialPosition = { x: 0, y: 0 }, color = 'text-[#33ff00]' }) => {
     const getIcon = () => {
@@ -17,6 +18,18 @@ const DesktopIcon = ({ name, icon, type, onClick, initialPosition = { x: 0, y: 0
     }
 
     const IconComponent = getIcon()
+    const { showMenu } = useContextMenu()
+
+    const handleContextMenu = (e) => {
+        e.stopPropagation()
+        showMenu(e, [
+            { label: 'Open', icon: ExternalLink, action: onClick },
+            { label: 'Rename', icon: Edit2, action: () => alert('Rename coming soon!') },
+            { separator: true },
+            { label: 'Properties', icon: Info, action: () => alert(`Type: ${type}\nName: ${name}`) },
+            { label: 'Delete', icon: Trash2, danger: true, action: () => alert('Protected system file!') },
+        ])
+    }
 
     return (
         <motion.div
@@ -27,6 +40,7 @@ const DesktopIcon = ({ name, icon, type, onClick, initialPosition = { x: 0, y: 0
                 e.stopPropagation()
                 onClick()
             }}
+            onContextMenu={handleContextMenu}
             className="absolute flex flex-col items-center justify-start w-24 p-2 rounded group cursor-grab active:cursor-grabbing select-none pointer-events-auto z-10 active:z-50"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}

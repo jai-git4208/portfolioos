@@ -6,6 +6,7 @@ import Window from './Window'
 import Spotlight from './Spotlight'
 import Wallpaper from './Wallpaper'
 import { useWindowManager } from '../../hooks/useWindowManager'
+import { useBackgroundMusic } from '../../hooks/useBackgroundMusic'
 import { APP_CONFIG, APPS } from '../../utils/constants'
 import WeatherWidget from '../Widgets/WeatherWidget'
 import ClockWidget from '../Widgets/ClockWidget'
@@ -20,6 +21,15 @@ const Desktop = () => {
   const { showMenu } = useContextMenu()
   const [showSpotlight, setShowSpotlight] = useState(false)
 
+  // Load volume first for background music
+  const [volume, setVolume] = useState(() => {
+    const saved = localStorage.getItem('desktop_volume')
+    return saved ? parseInt(saved) : 100
+  })
+
+  // Initialize background music with current volume
+  useBackgroundMusic(volume)
+
   // Load settings from localStorage
   const [wallpaper, setWallpaper] = useState(() => {
     const saved = localStorage.getItem('desktop_wallpaper')
@@ -28,7 +38,7 @@ const Desktop = () => {
 
   const [customWallpaper, setCustomWallpaper] = useState(() => {
     const saved = localStorage.getItem('desktop_custom_wallpaper')
-    return saved ? saved : '/frieren.jpg'
+    return saved ? saved : '/frieren.webp'
   })
 
   const [brightness, setBrightness] = useState(() => {
@@ -36,10 +46,6 @@ const Desktop = () => {
     return saved ? parseInt(saved) : 100
   })
 
-  const [volume, setVolume] = useState(() => {
-    const saved = localStorage.getItem('desktop_volume')
-    return saved ? parseInt(saved) : 100
-  })
 
   const [hiddenApps, setHiddenApps] = useState(() => {
     const saved = localStorage.getItem('desktop_hidden_apps')

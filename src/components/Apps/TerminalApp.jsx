@@ -10,6 +10,7 @@ const TerminalApp = () => {
   const [currentPath, setCurrentPath] = useState('~')
   const inputRef = useRef(null)
   const outputRef = useRef(null)
+  const audioRef = useRef(null)
 
   useEffect(() => {
     // Welcome message
@@ -30,6 +31,36 @@ const TerminalApp = () => {
   useEffect(() => {
     // Focus input on mount and when clicking terminal
     inputRef.current?.focus()
+  }, [])
+
+  useEffect(() => {
+    // Initialize and play terminal music
+    if (!audioRef.current) {
+      audioRef.current = new Audio('/zoltraak.mp3')
+      audioRef.current.loop = true
+
+      // Get volume from localStorage
+      const savedVolume = localStorage.getItem('desktop_volume')
+      const volume = savedVolume ? parseInt(savedVolume) : 100
+      audioRef.current.volume = volume / 100
+
+      // Play with error handling
+      const playPromise = audioRef.current.play()
+      if (playPromise !== undefined) {
+        playPromise.catch(error => {
+          console.log('Terminal music autoplay prevented:', error)
+        })
+      }
+    }
+
+    return () => {
+      // Stop music when terminal closes
+      if (audioRef.current) {
+        audioRef.current.pause()
+        audioRef.current.currentTime = 0
+        audioRef.current = null
+      }
+    }
   }, [])
 
   const fileSystem = {

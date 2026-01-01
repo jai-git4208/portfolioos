@@ -15,9 +15,13 @@ const AboutApp = () => {
         <div className="flex items-start space-x-6">
           <motion.div
             whileHover={{ scale: 1.1, rotate: 5 }}
-            className="w-24 h-24 rounded-3xl bg-gradient-to-br from-neon-pink to-neon-orange flex items-center justify-center text-white text-4xl font-bold deep-shadow"
+            className="w-24 h-24 rounded-3xl overflow-hidden deep-shadow border-2 border-white/20"
           >
-            JP
+            <img
+              src="/jai.png"
+              alt={USER_INFO.name}
+              className="w-full h-full object-cover"
+            />
           </motion.div>
 
           <div className="flex-1">

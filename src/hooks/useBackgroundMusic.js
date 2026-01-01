@@ -35,10 +35,20 @@ export const useBackgroundMusic = (volume = 100) => {
     }, [])
 
     // Update volume when it changes
+    // Listen for volume changes
     useEffect(() => {
+        const handleVolumeChange = (e) => {
+            if (audioRef.current) {
+                audioRef.current.volume = e.detail / 100
+            }
+        }
+
         if (audioRef.current) {
             audioRef.current.volume = volume / 100
         }
+
+        window.addEventListener('volume-change', handleVolumeChange)
+        return () => window.removeEventListener('volume-change', handleVolumeChange)
     }, [volume])
 
     return audioRef

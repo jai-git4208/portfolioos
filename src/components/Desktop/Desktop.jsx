@@ -7,6 +7,7 @@ import Spotlight from './Spotlight'
 import Wallpaper from './Wallpaper'
 import { useWindowManager } from '../../hooks/useWindowManager'
 import { useBackgroundMusic } from '../../hooks/useBackgroundMusic'
+import { useKonamiCode } from '../../hooks/useKonamiCode'
 import { APP_CONFIG, APPS } from '../../utils/constants'
 import WeatherWidget from '../Widgets/WeatherWidget'
 import ClockWidget from '../Widgets/ClockWidget'
@@ -20,6 +21,13 @@ const Desktop = () => {
   const windowManager = useWindowManager()
   const { showMenu } = useContextMenu()
   const [showSpotlight, setShowSpotlight] = useState(false)
+  const [isGodMode, setIsGodMode] = useState(false)
+
+  useKonamiCode(() => {
+    setIsGodMode(prev => !prev)
+    // Optional: Play a sound or show a notification
+    new Audio('/zoltraak.mp3').play().catch(() => { })
+  })
 
   // Load volume first for background music
   const [volume, setVolume] = useState(() => {
@@ -122,10 +130,8 @@ const Desktop = () => {
     setVolume(value)
     localStorage.setItem('desktop_volume', value.toString())
 
-    // Update all audio elements
-    document.querySelectorAll('audio').forEach(audio => {
-      audio.volume = value / 100
-    })
+    // Dispatch global event for audio hooks
+    window.dispatchEvent(new CustomEvent('volume-change', { detail: value }))
   }
 
   const updateHiddenApps = (apps) => {
@@ -153,7 +159,7 @@ const Desktop = () => {
   return (
     <div
       className="relative w-full h-full overflow-hidden"
-      style={{ filter: `brightness(${brightness}%)` }}
+      style={{ filter: `brightness(${brightness}%) ${isGodMode ? 'invert(1) hue-rotate(180deg)' : ''}` }}
       onContextMenu={handleDesktopContextMenu}
     >
       {/* Animated Wallpaper */}
